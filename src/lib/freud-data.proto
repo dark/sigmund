@@ -1,0 +1,30 @@
+option optimize_for = LITE_RUNTIME;
+package freudpb;
+
+message KeyValue {
+  enum Type {
+    INVALID = 0;
+    UINT32 = 1;
+    UINT64 = 2;
+  }
+  required string key = 1;
+  required Type type = 2;
+  optional uint32 value_u32 = 3;
+  optional uint64 value_u64 = 4;
+}
+
+message TrackedInstance {
+  // General process info
+  required int32 pid = 1; // PID of the process enclosing the instance
+  required string procname = 2; // filename of the process image
+
+  // Instance-specific info
+  required uint64 usec_ts = 3; // timestamp of capture as usec since the epoch
+  required string module_name = 4; // name of the module enclosing the instance
+  required uint64 instance_id = 5; // instance ID
+
+  repeated uint64 trace = 6; // array of PCs of the stack trace
+  repeated KeyValue generic_info = 7; // generic information
+  repeated KeyValue module_info = 8; // module-specific information
+  optional string instance_info = 9; // instance-specific information
+}
