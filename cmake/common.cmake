@@ -1,4 +1,11 @@
-#### protobuf section ####
+#### compiler ####
+SET(CMAKE_C_COMPILER /usr/bin/clang)
+SET(CMAKE_CXX_COMPILER /usr/bin/clang++)
+
+#### C++ flags ####
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -Wsign-compare -Wtype-limits -O2 -g -pipe")
+
+#### protobuf ####
 find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 

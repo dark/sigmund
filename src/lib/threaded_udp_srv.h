@@ -16,13 +16,28 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include "lib/threaded_udp_srv.h"
+#include <thread>
 
-int main (void) {
-  freud::lib::ThreadedUDPServer udp;
-  uint16_t port = udp.start_listening();
-  fprintf(stderr, "UDP server listening on port: %d\n", port);
+namespace freud {
+namespace lib {
 
-  return 0;
-}
+class ThreadedUDPServer {
+ public:
+  ThreadedUDPServer();
+  ~ThreadedUDPServer() = default;
+
+  uint16_t start_listening();
+
+  uint16_t get_listening_port() const { return port_; }
+
+ private:
+  bool try_init_socket();
+  bool try_bind_port();
+
+  std::thread *listener_;
+  int fd_;
+  uint16_t port_;
+};
+
+} // namespace lib
+} // namespace freud
