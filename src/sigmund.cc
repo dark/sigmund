@@ -19,6 +19,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <condition_variable>
 #include <mutex>
 #include "lib/threaded_udp_srv.h"
@@ -26,6 +27,8 @@
 std::mutex signal_mutex;
 std::condition_variable signal_cv;
 int last_signal = 0;
+
+#define PORTFILE "/run/sigmund/portfile"
 
 void signal_handler(const int signum) {
   if (signum != SIGTERM && signum != SIGINT)
@@ -58,6 +61,21 @@ bool setup_signal_handler() {
   return true;
 }
 
+void create_portfile(const uint16_t port) {
+  FILE* fp = fopen(PORTFILE, "w");
+  if (!fp) {
+    fprintf(stderr, "ERROR: fopen portfile %s: %s\n", PORTFILE, strerror(errno));
+    return;
+  }
+  fprintf(fp, "%d\n", port);
+  fclose(fp);
+}
+
+void delete_portfile() {
+  if (!unlink(PORTFILE))
+    fprintf(stderr, "ERROR: unlink portfile %s: %s\n", PORTFILE, strerror(errno));
+}
+
 int main (void) {
   if (!setup_signal_handler()) {
     fprintf(stderr, "ERROR: failed to setup signal handler\n");
@@ -68,6 +86,8 @@ int main (void) {
   freud::lib::ThreadedUDPServer udp;
   uint16_t port = udp.start_listening();
   fprintf(stderr, "INFO: UDP server listening on port: %d\n", port);
+
+  create_portfile(port);
 
   // the big waiting loop
   while (true) {
@@ -82,6 +102,8 @@ int main (void) {
     // reset value of last signal received
     last_signal = 0;
   }
+
+  delete_portfile();
 
   fprintf(stderr, "INFO: requesting UDP server shutdown\n");
   udp.stop_listening();
