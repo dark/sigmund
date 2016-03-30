@@ -39,6 +39,7 @@ class ThreadedUDPServer {
   std::thread *listener_;
   int fd_;
   uint16_t port_;
+  bool shutting_down_;
 };
 
 } // namespace lib

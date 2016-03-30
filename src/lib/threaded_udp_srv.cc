@@ -31,7 +31,7 @@ namespace freud {
 namespace lib {
 
 ThreadedUDPServer::ThreadedUDPServer()
-    : listener_(NULL), fd_(0), port_(0) {
+    : listener_(NULL), fd_(0), port_(0), shutting_down_(false) {
 }
 
 uint16_t ThreadedUDPServer::start_listening() {
@@ -45,6 +45,7 @@ uint16_t ThreadedUDPServer::start_listening() {
   if (!try_bind_port())
     return 0;
 
+  shutting_down_ = false;
   listener_ = new std::thread(&ThreadedUDPServer::keep_listening, this);
   return port_;
 }
@@ -57,13 +58,14 @@ void ThreadedUDPServer::stop_listening() {
   std::thread *local_listener = listener_;
   listener_ = NULL;
 
+  shutting_down_ = true;
   if (::shutdown(fd_, SHUT_RDWR))
     fprintf(stderr, "ERROR: shutdown: %s\n", strerror(errno));
 
   fprintf(stderr, "NOTICE: waiting for listener\n");
   local_listener->join();
   delete local_listener;
-  fprintf(stderr, "NOTICE: listener done\n");
+  fprintf(stderr, "NOTICE: done waiting for listener\n");
 }
 
 
@@ -131,10 +133,22 @@ void ThreadedUDPServer::keep_listening() {
       fprintf(stderr, "ERROR: recvfrom: %s\n", strerror(errno));
       break;
     }
-    fprintf(stderr, "NOTICE: recv %zd bytes\n", result);
+    if (result == 0) {
+      // This can happen for two reasons:
+      // 1) a 0-length datagram is received
+      // 2) shutdown() has been initiated
+      // Ignore case #1, and break out in case #2.
+      if (shutting_down_) {
+        fprintf(stderr, "NOTICE: listener shutdown requested\n");
+        break;
+      }
+      continue;
+    }
+
+    fprintf(stderr, "DEBUG: recv %zd bytes\n", result);
   }
 
-  fprintf(stderr, "NOTICE: stopping listener\n");
+  fprintf(stderr, "NOTICE: listener stopping\n");
 }
 
 } // namespace lib
