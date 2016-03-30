@@ -42,29 +42,40 @@ void signal_handler(const int signum) {
   signal_cv.notify_one();
 }
 
-int main (void) {
-  freud::lib::ThreadedUDPServer udp;
-  uint16_t port = udp.start_listening();
-  fprintf(stderr, "INFO: UDP server listening on port: %d\n", port);
-
+bool setup_signal_handler() {
   struct sigaction action;
   bzero(&action, sizeof(action));
   action.sa_handler = signal_handler;
   if (sigaction(SIGTERM, &action, NULL) < 0) {
     fprintf(stderr, "ERROR: sigaction(SIGTERM) failed: %s\n", strerror(errno));
-    return 1;
+    return false;
   }
   if (sigaction(SIGINT, &action, NULL) < 0) {
-    fprintf(stderr, "ERROR: sigaction(SIGTERM) failed: %s\n", strerror(errno));
+    fprintf(stderr, "ERROR: sigaction(SIGINT) failed: %s\n", strerror(errno));
+    return false;
+  }
+
+  return true;
+}
+
+int main (void) {
+  if (!setup_signal_handler()) {
+    fprintf(stderr, "ERROR: failed to setup signal handler\n");
     return 1;
   }
 
+  // setup modules
+  freud::lib::ThreadedUDPServer udp;
+  uint16_t port = udp.start_listening();
+  fprintf(stderr, "INFO: UDP server listening on port: %d\n", port);
+
+  // the big waiting loop
   while (true) {
     std::unique_lock<std::mutex> lock(signal_mutex);
     signal_cv.wait(lock, []{return last_signal != 0;});
 
     if (last_signal == SIGTERM || last_signal == SIGINT)
-      // if interruption signal is received break out of the loop to
+      // if interruption signal is received, break out of the loop to
       // initiate a shutdown
       break;
 
