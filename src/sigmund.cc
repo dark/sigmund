@@ -71,11 +71,16 @@ void create_portfile(const uint16_t port) {
   }
   fprintf(fp, "%d\n", port);
   fclose(fp);
+
+  fprintf(stderr, "INFO: portfile %s created\n", PORTFILE);
 }
 
 void delete_portfile() {
-  if (unlink(PORTFILE) < 0)
+  if (unlink(PORTFILE) < 0) {
     fprintf(stderr, "ERROR: unlink portfile %s: %s\n", PORTFILE, strerror(errno));
+    return;
+  }
+  fprintf(stderr, "INFO: portfile %s deleted\n", PORTFILE);
 }
 
 int main (void) {
