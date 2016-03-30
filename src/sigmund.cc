@@ -72,7 +72,7 @@ void create_portfile(const uint16_t port) {
 }
 
 void delete_portfile() {
-  if (!unlink(PORTFILE))
+  if (unlink(PORTFILE) < 0)
     fprintf(stderr, "ERROR: unlink portfile %s: %s\n", PORTFILE, strerror(errno));
 }
 
