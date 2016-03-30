@@ -17,12 +17,22 @@
  */
 
 #include <stdio.h>
+#include <condition_variable>
+#include <mutex>
 #include "lib/threaded_udp_srv.h"
+
+std::mutex signal_mutex;
+std::condition_variable signal_cv;
 
 int main (void) {
   freud::lib::ThreadedUDPServer udp;
   uint16_t port = udp.start_listening();
-  fprintf(stderr, "UDP server listening on port: %d\n", port);
+  fprintf(stderr, "INFO: UDP server listening on port: %d\n", port);
+
+  while (true) {
+    std::unique_lock<std::mutex> lock(signal_mutex);
+    signal_cv.wait(lock);
+  }
 
   return 0;
 }

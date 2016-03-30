@@ -45,19 +45,37 @@ uint16_t ThreadedUDPServer::start_listening() {
   if (!try_bind_port())
     return 0;
 
-  listener_ = new std::thread(keep_listening, this);
+  listener_ = new std::thread(&ThreadedUDPServer::keep_listening, this);
   return port_;
 }
+
+void ThreadedUDPServer::stop_listening() {
+  if (!listener_)
+    // nothing to do here
+    return;
+
+  std::thread *local_listener = listener_;
+  listener_ = NULL;
+
+  if (::shutdown(fd_, SHUT_RDWR))
+    fprintf(stderr, "ERROR: shutdown: %s\n", strerror(errno));
+
+  fprintf(stderr, "NOTICE: waiting for listener\n");
+  local_listener->join();
+  delete local_listener;
+  fprintf(stderr, "NOTICE: listener done\n");
+}
+
 
 bool ThreadedUDPServer::try_init_socket() {
   if (fd_)
     // do not init twice
     return true;
 
-  int local_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+  int local_fd = ::socket(AF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0);
   if (local_fd < 0) {
     // failed to initialize the socket
-    fprintf(stderr, "socket: %s\n", strerror(errno));
+    fprintf(stderr, "ERROR: socket: %s\n", strerror(errno));
     return false;
   }
 
@@ -65,7 +83,7 @@ bool ThreadedUDPServer::try_init_socket() {
   int val = 1;
   if (::setsockopt(local_fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) < 0) {
     // failed to initialize the socket
-    fprintf(stderr, "setsockopt: %s\n", strerror(errno));
+    fprintf(stderr, "ERROR: setsockopt: %s\n", strerror(errno));
     return false;
   }
 
@@ -93,12 +111,30 @@ bool ThreadedUDPServer::try_bind_port() {
     }
 
     // failed to bind, try again
-    printf("bind, port %d: %s\n", local_port, strerror(errno));
+    fprintf(stderr, "NOTICE: bind, port %d: %s\n", local_port, strerror(errno));
     ++local_port;
   }
 
   // permanently failed to bind
+  fprintf(stderr, "ERROR: bind failed permanently\n");
   return false;
+}
+
+void ThreadedUDPServer::keep_listening() {
+  // cache the FD locally
+  const int local_fd = fd_;
+
+  char buf[2048];
+  while (true) {
+    ssize_t result = recvfrom(local_fd, buf, sizeof(buf), 0, NULL, NULL);
+    if (result == -1) {
+      fprintf(stderr, "ERROR: recvfrom: %s\n", strerror(errno));
+      break;
+    }
+    fprintf(stderr, "NOTICE: recv %zd bytes\n", result);
+  }
+
+  fprintf(stderr, "NOTICE: stopping listener\n");
 }
 
 } // namespace lib

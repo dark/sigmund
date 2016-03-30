@@ -27,12 +27,14 @@ class ThreadedUDPServer {
   ~ThreadedUDPServer() = default;
 
   uint16_t start_listening();
+  void stop_listening();
 
   uint16_t get_listening_port() const { return port_; }
 
  private:
   bool try_init_socket();
   bool try_bind_port();
+  void keep_listening();
 
   std::thread *listener_;
   int fd_;
