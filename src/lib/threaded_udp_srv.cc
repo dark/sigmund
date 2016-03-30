@@ -62,10 +62,10 @@ void ThreadedUDPServer::stop_listening() {
   if (::shutdown(fd_, SHUT_RDWR))
     fprintf(stderr, "ERROR: shutdown: %s\n", strerror(errno));
 
-  fprintf(stderr, "NOTICE: waiting for listener\n");
+  fprintf(stderr, "INFO: waiting for listener\n");
   local_listener->join();
   delete local_listener;
-  fprintf(stderr, "NOTICE: done waiting for listener\n");
+  fprintf(stderr, "INFO: done waiting for listener\n");
 }
 
 
@@ -113,7 +113,7 @@ bool ThreadedUDPServer::try_bind_port() {
     }
 
     // failed to bind, try again
-    fprintf(stderr, "NOTICE: bind, port %d: %s\n", local_port, strerror(errno));
+    fprintf(stderr, "INFO: bind, port %d: %s\n", local_port, strerror(errno));
     ++local_port;
   }
 
@@ -139,7 +139,7 @@ void ThreadedUDPServer::keep_listening() {
       // 2) shutdown() has been initiated
       // Ignore case #1, and break out in case #2.
       if (shutting_down_) {
-        fprintf(stderr, "NOTICE: listener shutdown requested\n");
+        fprintf(stderr, "INFO: listener shutdown requested\n");
         break;
       }
       continue;
@@ -148,7 +148,7 @@ void ThreadedUDPServer::keep_listening() {
     fprintf(stderr, "DEBUG: recv %zd bytes\n", result);
   }
 
-  fprintf(stderr, "NOTICE: listener stopping\n");
+  fprintf(stderr, "INFO: listener stopping\n");
 }
 
 } // namespace lib
