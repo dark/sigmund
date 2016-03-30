@@ -4,4 +4,4 @@ include_directories(.)
 add_subdirectory(lib)
 
 add_executable(sigmund sigmund.cc)
-target_link_libraries(sigmund udp_srv)
+target_link_libraries(sigmund udp_srv db_ifc)

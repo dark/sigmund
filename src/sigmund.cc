@@ -22,12 +22,14 @@
 #include <unistd.h>
 #include <condition_variable>
 #include <mutex>
+#include "lib/db_interface.h"
 #include "lib/threaded_udp_srv.h"
 
 std::mutex signal_mutex;
 std::condition_variable signal_cv;
 int last_signal = 0;
 
+#define DATABASE_DIR "/var/lib/sigmund/"
 #define PORTFILE "/run/sigmund/portfile"
 
 void signal_handler(const int signum) {
@@ -83,6 +85,12 @@ int main (void) {
   }
 
   // setup modules
+  freud::lib::DBInterface db(DATABASE_DIR);
+  if (!db.init()) {
+    fprintf(stderr, "ERROR: could not init db\n");
+    return 1;
+  }
+
   freud::lib::ThreadedUDPServer udp;
   uint16_t port = udp.start_listening();
   fprintf(stderr, "INFO: UDP server listening on port: %d\n", port);
@@ -107,6 +115,8 @@ int main (void) {
 
   fprintf(stderr, "INFO: requesting UDP server shutdown\n");
   udp.stop_listening();
+
+  db.fini();
 
   return 0;
 }
