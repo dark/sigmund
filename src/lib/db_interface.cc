@@ -31,16 +31,28 @@ DBInterface::~DBInterface() {
 }
 
 bool DBInterface::init() {
+  // open a connection
   int res = sqlite3_open(db_filename_.c_str(), &db_handle_);
   if (res != SQLITE_OK) {
     fprintf(stderr, "ERROR: sqlite3_open %s: %s\n", db_filename_.c_str(), sqlite3_errmsg(db_handle_));
-    if (sqlite3_close(db_handle_) != SQLITE_OK)
-      fprintf(stderr, "ERROR: sqlite3_close %s: %s\n", db_filename_.c_str(), sqlite3_errmsg(db_handle_));
-    db_handle_ = NULL;
+    close_handle();
     return false;
   }
 
   fprintf(stderr, "INFO: DB init'd at %s\n", db_filename_.c_str());
+
+  // create tables if they do not exist
+  char *errmsg = NULL;
+  res = sqlite3_exec(db_handle_, "CREATE TABLE IF NOT EXISTS cache (id INTEGER PRIMARY KEY, data BLOB);",
+                     NULL, NULL, &errmsg);
+  if (res != SQLITE_OK) {
+    fprintf(stderr, "ERROR: sqlite3_exec %s: %s\n", db_filename_.c_str(), errmsg);
+    sqlite3_free(errmsg);
+    close_handle();
+    return false;
+  }
+
+  fprintf(stderr, "INFO: tables init'd at %s\n", db_filename_.c_str());
   return true;
 }
 
@@ -49,10 +61,14 @@ void DBInterface::fini() {
     return;
   fini_called_ = true;
 
+  close_handle();
+  fprintf(stderr, "INFO: DB closed at %s\n", db_filename_.c_str());
+}
+
+void DBInterface::close_handle() {
   if (sqlite3_close(db_handle_) != SQLITE_OK)
     fprintf(stderr, "ERROR: sqlite3_close %s: %s\n", db_filename_.c_str(), sqlite3_errmsg(db_handle_));
   db_handle_ = NULL;
-  fprintf(stderr, "INFO: DB closed at %s\n", db_filename_.c_str());
 }
 
 } // namespace lib

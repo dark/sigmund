@@ -35,6 +35,8 @@ class DBInterface {
   std::string db_filename_;
   bool fini_called_;
   sqlite3 *db_handle_;
+
+  void close_handle();
 };
 
 } // namespace lib
