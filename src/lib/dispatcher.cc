@@ -23,10 +23,49 @@ namespace lib {
 
 Dispatcher::Dispatcher(DBInterface *db)
     : db_(db) {
+  worker_ = new std::thread(&Dispatcher::worker_fn, this);
+}
+
+Dispatcher::~Dispatcher() {
+  stop_and_wait();
 }
 
 void Dispatcher::msg_received(std::string *msg) {
   inbound_queue_.push(msg);
+}
+
+void Dispatcher::stop() {
+  inbound_queue_.push(NULL);
+}
+
+void Dispatcher::stop_and_wait() {
+  stop();
+  wait();
+}
+
+void Dispatcher::worker_fn() {
+  while (true) {
+    std::string *s = inbound_queue_.pop_or_wait();
+    if (!s)
+      // stop processing events
+      break;
+
+    if (!db_->cache_packet(*s))
+      fprintf(stderr, "WARNING: could not cache packet in database\n");
+
+    delete s;
+  }
+}
+
+void Dispatcher::wait() {
+  std::thread *local_worker = worker_;
+  worker_ = NULL;
+
+  if (!local_worker)
+    return;
+
+  local_worker->join();
+  delete local_worker;
 }
 
 } // namespace lib

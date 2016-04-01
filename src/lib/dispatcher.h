@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <thread>
 #include "lib/db_interface.h"
 #include "lib/sync_queue.h"
 
@@ -27,15 +28,23 @@ namespace lib {
 class Dispatcher {
  public:
   explicit Dispatcher(DBInterface *db);
-  ~Dispatcher() = default;
+  ~Dispatcher();
 
   // this method transfers ownership of the pointer inside the
   // Dispatcher
   void msg_received(std::string *msg);
 
+  // stop the dispacher
+  void stop();
+  void stop_and_wait();
+
  private:
   DBInterface *db_;
   SyncQueue<std::string> inbound_queue_;
+  std::thread *worker_;
+
+  void worker_fn();
+  void wait();
 };
 
 } // namespace lib

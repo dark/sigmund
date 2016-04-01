@@ -22,7 +22,7 @@ namespace freud {
 namespace lib {
 
 DBInterface::DBInterface(const std::string &db_directory)
-    : db_directory_(db_directory), fini_called_(false), db_handle_(NULL) {
+    : db_directory_(db_directory), fini_called_(false), db_handle_(NULL), insert_pkt_cache_(NULL) {
   db_filename_ = db_directory_ + "/sqlite.db";
 }
 
@@ -46,13 +46,26 @@ bool DBInterface::init() {
   res = sqlite3_exec(db_handle_, "CREATE TABLE IF NOT EXISTS cache (id INTEGER PRIMARY KEY, data BLOB);",
                      NULL, NULL, &errmsg);
   if (res != SQLITE_OK) {
-    fprintf(stderr, "ERROR: sqlite3_exec %s: %s\n", db_filename_.c_str(), errmsg);
+    fprintf(stderr, "ERROR: sqlite3_exec %s: %s\n", sqlite3_errmsg(db_handle_), errmsg);
     sqlite3_free(errmsg);
     close_handle();
     return false;
   }
 
   fprintf(stderr, "INFO: tables init'd at %s\n", db_filename_.c_str());
+
+  // init all prepared statements
+  res = sqlite3_prepare_v2(db_handle_,
+                           "INSERT INTO cache (data) VALUES (\"@pktdata\");",
+                           -1,
+                           &insert_pkt_cache_,
+                           NULL);
+  if (res != SQLITE_OK) {
+    fprintf(stderr, "ERROR: prepared stmt 1 failed: %s\n", sqlite3_errmsg(db_handle_));
+    close_handle();
+    return false;
+  }
+
   return true;
 }
 
@@ -61,8 +74,46 @@ void DBInterface::fini() {
     return;
   fini_called_ = true;
 
+  // finalize all prepared statements
+  if (insert_pkt_cache_) {
+    int res = sqlite3_finalize(insert_pkt_cache_);
+    if (res != SQLITE_OK)
+      // soft error
+      fprintf(stderr, "WARNING: %s, finalize stmt 1 failed: %s\n", __FUNCTION__, sqlite3_errmsg(db_handle_));
+
+    insert_pkt_cache_ = NULL;
+  }
+
   close_handle();
   fprintf(stderr, "INFO: DB closed at %s\n", db_filename_.c_str());
+}
+
+bool DBInterface::cache_packet(const std::string &s) {
+  int res = sqlite3_reset(insert_pkt_cache_);
+  if (res != SQLITE_OK)
+    // soft error
+    fprintf(stderr, "WARNING: %s, reset failed: %s\n", __FUNCTION__, sqlite3_errmsg(db_handle_));
+
+  // I am not going to call sqlite3_clear_bindings(), since we are
+  // going to overwrite @pktdata anyway
+  res = sqlite3_bind_blob(insert_pkt_cache_,
+                          1,
+                          s.data(), s.length(),
+                          SQLITE_STATIC);
+  if (res != SQLITE_OK) {
+    // fatal error
+    fprintf(stderr, "ERROR: %s, bind failed: %s\n", __FUNCTION__, sqlite3_errmsg(db_handle_));
+    return false;
+  }
+
+  res = sqlite3_step(insert_pkt_cache_);
+  if (res != SQLITE_DONE) {
+    // fatal error
+    fprintf(stderr, "ERROR: %s, step failed: %s\n", __FUNCTION__, sqlite3_errmsg(db_handle_));
+    return false;
+  }
+
+  return true;
 }
 
 void DBInterface::close_handle() {

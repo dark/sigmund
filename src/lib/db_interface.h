@@ -32,11 +32,16 @@ class DBInterface {
   bool init();
   void fini();
 
+  bool cache_packet(const std::string &s);
+
  private:
   std::string db_directory_;
   std::string db_filename_;
   bool fini_called_;
   sqlite3 *db_handle_;
+
+  // prepared statements
+  sqlite3_stmt *insert_pkt_cache_;
 
   void close_handle();
 };
