@@ -120,8 +120,11 @@ int main (void) {
 
   delete_portfile();
 
+  // stop all modules
   fprintf(stderr, "INFO: requesting UDP server shutdown\n");
   udp.stop_listening();
+
+  dispatcher.stop_and_wait();
 
   db.fini();
 

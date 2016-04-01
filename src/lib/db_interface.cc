@@ -56,7 +56,7 @@ bool DBInterface::init() {
 
   // init all prepared statements
   res = sqlite3_prepare_v2(db_handle_,
-                           "INSERT INTO cache (data) VALUES (\"@pktdata\");",
+                           "INSERT INTO cache (data) VALUES (@pktdata);",
                            -1,
                            &insert_pkt_cache_,
                            NULL);
