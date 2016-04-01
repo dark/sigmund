@@ -66,6 +66,7 @@ bool DBInterface::init() {
     return false;
   }
 
+  fprintf(stderr, "INFO: stmts init'd at %s\n", db_filename_.c_str());
   return true;
 }
 
