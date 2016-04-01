@@ -30,8 +30,8 @@
 namespace freud {
 namespace lib {
 
-ThreadedUDPServer::ThreadedUDPServer()
-    : listener_(NULL), fd_(0), port_(0), shutting_down_(false) {
+ThreadedUDPServer::ThreadedUDPServer(Dispatcher *dispatcher)
+    : dispatcher_(dispatcher), listener_(NULL), fd_(0), port_(0), shutting_down_(false) {
 }
 
 uint16_t ThreadedUDPServer::start_listening() {
@@ -145,7 +145,9 @@ void ThreadedUDPServer::keep_listening() {
       continue;
     }
 
-    fprintf(stderr, "DEBUG: recv %zd bytes\n", result);
+    //fprintf(stderr, "TRACE: recv %zd bytes\n", result);
+    std::string *s = new std::string(buf, result);
+    dispatcher_->msg_received(s);
   }
 
   fprintf(stderr, "INFO: listener stopping\n");

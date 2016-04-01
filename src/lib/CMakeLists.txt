@@ -8,3 +8,6 @@ target_link_libraries(udp_srv pthread)
 # DB interface
 add_library(db_ifc db_interface.cc)
 target_link_libraries(db_ifc sqlite3)
+
+# dispatcher
+add_library(dispatcher dispatcher.cc)

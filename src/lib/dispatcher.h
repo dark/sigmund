@@ -18,33 +18,24 @@
 
 #pragma once
 
-#include <thread>
-#include "lib/dispatcher.h"
+#include "lib/db_interface.h"
+#include "lib/sync_queue.h"
 
 namespace freud {
 namespace lib {
 
-class ThreadedUDPServer {
+class Dispatcher {
  public:
-  explicit ThreadedUDPServer(Dispatcher *dispatcher);
-  ~ThreadedUDPServer() = default;
+  explicit Dispatcher(DBInterface *db);
+  ~Dispatcher() = default;
 
-  uint16_t start_listening();
-  void stop_listening();
-
-  uint16_t get_listening_port() const { return port_; }
+  // this method transfers ownership of the pointer inside the
+  // Dispatcher
+  void msg_received(std::string *msg);
 
  private:
-  bool try_init_socket();
-  bool try_bind_port();
-  void keep_listening();
-
-  Dispatcher *dispatcher_;
-
-  std::thread *listener_;
-  int fd_;
-  uint16_t port_;
-  bool shutting_down_;
+  DBInterface *db_;
+  SyncQueue<std::string> inbound_queue_;
 };
 
 } // namespace lib

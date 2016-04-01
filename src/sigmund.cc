@@ -96,7 +96,9 @@ int main (void) {
     return 1;
   }
 
-  freud::lib::ThreadedUDPServer udp;
+  freud::lib::Dispatcher dispatcher(&db);
+
+  freud::lib::ThreadedUDPServer udp(&dispatcher);
   uint16_t port = udp.start_listening();
   fprintf(stderr, "INFO: UDP server listening on port: %d\n", port);
 

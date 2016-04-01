@@ -16,36 +16,18 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#include <thread>
 #include "lib/dispatcher.h"
 
 namespace freud {
 namespace lib {
 
-class ThreadedUDPServer {
- public:
-  explicit ThreadedUDPServer(Dispatcher *dispatcher);
-  ~ThreadedUDPServer() = default;
+Dispatcher::Dispatcher(DBInterface *db)
+    : db_(db) {
+}
 
-  uint16_t start_listening();
-  void stop_listening();
-
-  uint16_t get_listening_port() const { return port_; }
-
- private:
-  bool try_init_socket();
-  bool try_bind_port();
-  void keep_listening();
-
-  Dispatcher *dispatcher_;
-
-  std::thread *listener_;
-  int fd_;
-  uint16_t port_;
-  bool shutting_down_;
-};
+void Dispatcher::msg_received(std::string *msg) {
+  inbound_queue_.push(msg);
+}
 
 } // namespace lib
 } // namespace freud
