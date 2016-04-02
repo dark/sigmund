@@ -18,6 +18,8 @@
 
 #include "lib/es_interface.h"
 
+#include <string.h> // for basename
+
 namespace freud {
 namespace lib {
 
@@ -100,6 +102,8 @@ std::string ElasticSearchInterface::pb2json(const freudpb::TrackedInstance &pb) 
   append_kv_int32(&result, "pid", pb.pid());
   result += ", ";
   append_kv_string(&result, "procname", pb.procname());
+  result += ", ";
+  append_kv_string(&result, "basename", basename(pb.procname().c_str()));
   result += ", ";
   // normalize usec to msec (that's what ES expects)
   append_kv_uint64(&result, "time", pb.usec_ts() / 1000);
