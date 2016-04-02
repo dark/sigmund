@@ -74,7 +74,8 @@ std::string ElasticSearchInterface::pb2json(const freudpb::TrackedInstance &pb) 
   result += ", ";
   append_kv_string(&result, "procname", pb.procname());
   result += ", ";
-  append_kv_uint64(&result, "time", pb.usec_ts());
+  // normalize usec to msec (that's what ES expects)
+  append_kv_uint64(&result, "time", pb.usec_ts() / 1000);
   result += ", ";
   append_kv_string(&result, "module", pb.module_name());
   result += ", ";
