@@ -65,20 +65,26 @@ bool ElasticSearchInterface::post_packet(const std::string &s) {
 std::string ElasticSearchInterface::pb2json(const freudpb::TrackedInstance &pb) {
   std::string result = "{ ";
   append_kv_int32(&result, "pid", pb.pid());
-  result.append(", ");
+  result += ", ";
   append_kv_string(&result, "procname", pb.procname());
-  result.append(", ");
+  result += ", ";
   append_kv_uint64(&result, "time", pb.usec_ts());
-  result.append(", ");
+  result += ", ";
   append_kv_string(&result, "module", pb.module_name());
-  result.append(", ");
+  result += ", ";
   append_kv_uint64(&result, "instance", pb.instance_id());
-  result.append(", ");
+  result += ", ";
 
   // append array of traces
   result += "\"trace\": [";
-  for (const uint64_t &t : pb.trace()) {
-    result += std::to_string(t) + ", ";
+  {
+    bool first = true;
+    for (const uint64_t &t : pb.trace()) {
+      if (first)
+        result += ", ";
+      result += std::to_string(t);
+      first = false;
+    }
   }
   result += "], ";
 
@@ -94,7 +100,7 @@ std::string ElasticSearchInterface::pb2json(const freudpb::TrackedInstance &pb) 
 
   // append instance info, if present
   if (pb.has_instance_info()) {
-    result.append(", ");
+    result += ", ";
     append_kv_string(&result, "instance_info", pb.instance_info());
   }
 
