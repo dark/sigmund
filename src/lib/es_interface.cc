@@ -81,6 +81,8 @@ std::string ElasticSearchInterface::pb2json(const freudpb::TrackedInstance &pb) 
     bool first = true;
     for (const uint64_t &t : pb.trace()) {
       if (first)
+        result += " ";
+      else
         result += ", ";
       result += std::to_string(t);
       first = false;
@@ -103,6 +105,8 @@ std::string ElasticSearchInterface::pb2json(const freudpb::TrackedInstance &pb) 
     result += ", ";
     append_kv_string(&result, "instance_info", pb.instance_info());
   }
+
+  result += " }";
 
   return result;
 }
