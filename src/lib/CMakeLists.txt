@@ -1,5 +1,6 @@
 # compile protobuf definition for data definition
-PROTOBUF_GENERATE_CPP(FREUD_DATA_CC FREUD_DATA_H freud-data.proto freud_data_pb)
+PROTOBUF_GENERATE_CPP(FREUD_DATA_CC FREUD_DATA_H freud-data.proto freud_pb_src)
+add_library(freud_pb ${FREUD_DATA_CC})
 
 # UDP server
 add_library(udp_srv threaded_udp_srv.cc)

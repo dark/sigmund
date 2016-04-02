@@ -1,5 +1,6 @@
-# the current directory is the root of the source code
-include_directories(.)
+# the current src/build directories are the root of the source code
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(lib)
 
