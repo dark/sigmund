@@ -23,6 +23,7 @@
 #include <condition_variable>
 #include <mutex>
 #include "lib/db_interface.h"
+#include "lib/es_interface.h"
 #include "lib/threaded_udp_srv.h"
 
 std::mutex signal_mutex;
@@ -96,7 +97,13 @@ int main (void) {
     return 1;
   }
 
-  freud::lib::Dispatcher dispatcher(&db);
+  freud::lib::ElasticSearchInterface es("http://localhost:9200/");
+  if (!es.init()) {
+    fprintf(stderr, "ERROR: could not init ElasticSearch interface\n");
+    return 1;
+  }
+
+  freud::lib::Dispatcher dispatcher(&db, &es);
 
   freud::lib::ThreadedUDPServer udp(&dispatcher);
   uint16_t port = udp.start_listening();

@@ -20,6 +20,7 @@
 
 #include <thread>
 #include "lib/db_interface.h"
+#include "lib/es_interface.h"
 #include "lib/sync_queue.h"
 
 namespace freud {
@@ -27,7 +28,7 @@ namespace lib {
 
 class Dispatcher {
  public:
-  explicit Dispatcher(DBInterface *db);
+  Dispatcher(DBInterface *db, ElasticSearchInterface *es);
   ~Dispatcher();
 
   // this method transfers ownership of the pointer inside the
@@ -40,6 +41,7 @@ class Dispatcher {
 
  private:
   DBInterface *db_;
+  ElasticSearchInterface *es_;
   SyncQueue<std::string> inbound_queue_;
   std::thread *worker_;
 

@@ -10,5 +10,9 @@ target_link_libraries(udp_srv pthread)
 add_library(db_ifc db_interface.cc)
 target_link_libraries(db_ifc sqlite3)
 
+# DB interface
+add_library(es_ifc es_interface.cc)
+target_link_libraries(es_ifc freud_pb curl ${PROTOBUF_LIBRARIES})
+
 # dispatcher
 add_library(dispatcher dispatcher.cc)
