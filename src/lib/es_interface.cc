@@ -102,7 +102,7 @@ std::string ElasticSearchInterface::pb2json(const freudpb::TrackedInstance &pb) 
   result += "}, ";
 
   // append module info
-  result += "\"module_info\": {";
+  result += "\"" + pb.module_name() +"\": {";
   append_kv_list(&result, pb.module_info());
   result += "} ";
 
