@@ -65,10 +65,15 @@ bool ElasticSearchInterface::post_packet(const std::string &s) {
 std::string ElasticSearchInterface::pb2json(const freudpb::TrackedInstance &pb) {
   std::string result = "{ ";
   append_kv_int32(&result, "pid", pb.pid());
+  result.append(", ");
   append_kv_string(&result, "procname", pb.procname());
+  result.append(", ");
   append_kv_uint64(&result, "time", pb.usec_ts());
+  result.append(", ");
   append_kv_string(&result, "module", pb.module_name());
+  result.append(", ");
   append_kv_uint64(&result, "instance", pb.instance_id());
+  result.append(", ");
 
   // append array of traces
   result += "\"trace\": [";
@@ -85,11 +90,13 @@ std::string ElasticSearchInterface::pb2json(const freudpb::TrackedInstance &pb) 
   // append module info
   result += "\"module_info\": {";
   append_kv_list(&result, pb.module_info());
-  result += "}, ";
+  result += "} ";
 
   // append instance info, if present
-  if (pb.has_instance_info())
+  if (pb.has_instance_info()) {
+    result.append(", ");
     append_kv_string(&result, "instance_info", pb.instance_info());
+  }
 
   return result;
 }
@@ -99,7 +106,7 @@ void ElasticSearchInterface::append_kv_int32(std::string *s, const std::string &
   s->append(k);
   s->append("\": ");
   s->append(std::to_string(v));
-  s->append(", ");
+  s->append(" ");
 }
 
 void ElasticSearchInterface::append_kv_uint32(std::string *s, const std::string &k, const uint32_t v) {
@@ -107,7 +114,7 @@ void ElasticSearchInterface::append_kv_uint32(std::string *s, const std::string 
   s->append(k);
   s->append("\": ");
   s->append(std::to_string(v));
-  s->append(", ");
+  s->append(" ");
 }
 
 void ElasticSearchInterface::append_kv_uint64(std::string *s, const std::string &k, const uint64_t v) {
@@ -115,7 +122,7 @@ void ElasticSearchInterface::append_kv_uint64(std::string *s, const std::string 
   s->append(k);
   s->append("\": ");
   s->append(std::to_string(v));
-  s->append(", ");
+  s->append(" ");
 }
 
 void ElasticSearchInterface::append_kv_string(std::string *s, const std::string &k, const std::string &v) {
@@ -123,11 +130,12 @@ void ElasticSearchInterface::append_kv_string(std::string *s, const std::string 
   s->append(k);
   s->append("\": \"");
   s->append(v);
-  s->append("\", ");
+  s->append("\" ");
 }
 
 void ElasticSearchInterface::append_kv_list(std::string *s,
                                             const ::google::protobuf::RepeatedPtrField<freudpb::KeyValue> &list) {
+  bool first = true;
   for (const freudpb::KeyValue &kv: list) {
     switch (kv.type()) {
       case freudpb::KeyValue::INVALID:
@@ -135,17 +143,25 @@ void ElasticSearchInterface::append_kv_list(std::string *s,
         break;
 
       case freudpb::KeyValue::UINT32:
-        if (kv.has_value_u32())
+        if (kv.has_value_u32()) {
+          if (!first)
+            s->append(", ");
           append_kv_uint32(s, kv.key(), kv.value_u32());
-        else
+          first = false;
+        } else {
           fprintf(stderr, "WARNING: %s uint32 not found for key %s\n", __FUNCTION__, kv.key().c_str());
+        }
         break;
 
       case freudpb::KeyValue::UINT64:
-        if (kv.has_value_u64())
+        if (kv.has_value_u64()) {
+          if (!first)
+            s->append(", ");
           append_kv_uint64(s, kv.key(), kv.value_u64());
-        else
+          first = false;
+        } else {
           fprintf(stderr, "WARNING: %s uint64 not found for key %s\n", __FUNCTION__, kv.key().c_str());
+        }
         break;
     }
   }
