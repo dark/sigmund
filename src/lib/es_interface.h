@@ -46,6 +46,8 @@ class ElasticSearchInterface {
   char pkt_post_errbuf_[CURL_ERROR_SIZE];
   freudpb::TrackedInstance pkt_post_pb_;
 
+  void setup_es_document();
+
   std::string pb2json(const freudpb::TrackedInstance &pb);
   void append_kv_int32(std::string *s, const std::string &k, const int32_t v);
   void append_kv_uint32(std::string *s, const std::string &k, const uint32_t v);

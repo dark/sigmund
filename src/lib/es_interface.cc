@@ -27,6 +27,9 @@ ElasticSearchInterface::ElasticSearchInterface(const std::string &address)
 }
 
 bool ElasticSearchInterface::init() {
+  // setup the document in ES if it does not exist; failures should be ignored
+  setup_es_document();
+
   // init all handles
   pkt_post_ = curl_easy_init();
   curl_easy_setopt(pkt_post_, CURLOPT_URL, pkt_post_url_.c_str());
@@ -66,6 +69,30 @@ bool ElasticSearchInterface::post_packet(const std::string &s) {
 
 size_t ElasticSearchInterface::curl_null_cb(void * /*buffer*/, size_t size, size_t nmemb, void * /*userp*/) {
   return size * nmemb;
+}
+
+void ElasticSearchInterface::setup_es_document() {
+  std::string url = address_ + "analyst/";
+
+  CURL *handle = curl_easy_init();
+  curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
+  curl_easy_setopt(handle, CURLOPT_POST, 1);
+  curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, pkt_post_errbuf_);
+  curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, curl_null_cb);
+
+  // magic JSON, update accordingly
+  std::string postdata = "{\"mappings\":{\"report\":{\"properties\":{\"time\":{\"type\":\"date\", \"format\":\"epoch_millis\"}}}}}";
+  curl_easy_setopt(handle, CURLOPT_POSTFIELDS, postdata.c_str());
+  curl_easy_setopt(handle, CURLOPT_POSTFIELDSIZE, postdata.size());
+
+  CURLcode res = curl_easy_perform(handle);
+  if (res != CURLE_OK)
+    fprintf(stderr, "WARNING: ES document init failed %d(%s): %s\n",
+            res, curl_easy_strerror(res),
+            // errbuf might not have been populated
+            pkt_post_errbuf_[0] ? pkt_post_errbuf_ : "");
+
+  curl_easy_cleanup(handle);
 }
 
 std::string ElasticSearchInterface::pb2json(const freudpb::TrackedInstance &pb) {
