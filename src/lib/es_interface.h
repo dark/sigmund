@@ -35,6 +35,8 @@ class ElasticSearchInterface {
 
   bool post_packet(const std::string &pkt);
 
+  static size_t curl_null_cb(void *buffer, size_t size, size_t nmemb, void *userp);
+
  private:
   std::string address_;
 

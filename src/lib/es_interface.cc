@@ -32,9 +32,11 @@ bool ElasticSearchInterface::init() {
   curl_easy_setopt(pkt_post_, CURLOPT_URL, pkt_post_url_.c_str());
   curl_easy_setopt(pkt_post_, CURLOPT_POST, 1);
   curl_easy_setopt(pkt_post_, CURLOPT_ERRORBUFFER, pkt_post_errbuf_);
+  // suppress all data output with a null callback
+  curl_easy_setopt(pkt_post_, CURLOPT_WRITEFUNCTION, curl_null_cb);
 
   // DEBUG ONLY
-  curl_easy_setopt(pkt_post_, CURLOPT_VERBOSE, 1);
+  //curl_easy_setopt(pkt_post_, CURLOPT_VERBOSE, 1);
 
   return true;
 }
@@ -60,6 +62,10 @@ bool ElasticSearchInterface::post_packet(const std::string &s) {
   }
 
   return true;
+}
+
+size_t ElasticSearchInterface::curl_null_cb(void * /*buffer*/, size_t size, size_t nmemb, void * /*userp*/) {
+  return size * nmemb;
 }
 
 std::string ElasticSearchInterface::pb2json(const freudpb::TrackedInstance &pb) {
