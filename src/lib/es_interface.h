@@ -38,13 +38,12 @@ class ElasticSearchInterface {
   static size_t curl_null_cb(void *buffer, size_t size, size_t nmemb, void *userp);
 
  private:
-  std::string address_;
-
-  std::string pkt_post_url_;
-
-  CURL *pkt_post_;
-  char pkt_post_errbuf_[CURL_ERROR_SIZE];
+  std::string base_address_;
   freudpb::TrackedInstance pkt_post_pb_;
+
+  std::string detailed_report_post_url_;
+  CURL *detailed_report_handle_;
+  char detailed_report_post_errbuf_[CURL_ERROR_SIZE];
 
   void setup_es_document();
 

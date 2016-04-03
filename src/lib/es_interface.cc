@@ -24,8 +24,8 @@ namespace freud {
 namespace lib {
 
 ElasticSearchInterface::ElasticSearchInterface(const std::string &address)
-    : address_(address), pkt_post_(NULL) {
-  pkt_post_url_ = address + "analyst/report/";
+    : base_address_(address), detailed_report_handle_(NULL) {
+  detailed_report_post_url_ = base_address_ + "analyst/report-details/";
 }
 
 bool ElasticSearchInterface::init() {
@@ -33,15 +33,15 @@ bool ElasticSearchInterface::init() {
   setup_es_document();
 
   // init all handles
-  pkt_post_ = curl_easy_init();
-  curl_easy_setopt(pkt_post_, CURLOPT_URL, pkt_post_url_.c_str());
-  curl_easy_setopt(pkt_post_, CURLOPT_POST, 1);
-  curl_easy_setopt(pkt_post_, CURLOPT_ERRORBUFFER, pkt_post_errbuf_);
+  detailed_report_handle_ = curl_easy_init();
+  curl_easy_setopt(detailed_report_handle_, CURLOPT_URL, detailed_report_post_url_.c_str());
+  curl_easy_setopt(detailed_report_handle_, CURLOPT_POST, 1);
+  curl_easy_setopt(detailed_report_handle_, CURLOPT_ERRORBUFFER, detailed_report_post_errbuf_);
   // suppress all data output with a null callback
-  curl_easy_setopt(pkt_post_, CURLOPT_WRITEFUNCTION, curl_null_cb);
+  curl_easy_setopt(detailed_report_handle_, CURLOPT_WRITEFUNCTION, curl_null_cb);
 
   // DEBUG ONLY
-  //curl_easy_setopt(pkt_post_, CURLOPT_VERBOSE, 1);
+  //curl_easy_setopt(detailed_report_handle_, CURLOPT_VERBOSE, 1);
 
   return true;
 }
@@ -55,14 +55,14 @@ bool ElasticSearchInterface::post_packet(const std::string &s) {
 
   std::string postdata = pb2json(pkt_post_pb_);
 
-  curl_easy_setopt(pkt_post_, CURLOPT_POSTFIELDS, postdata.c_str());
-  curl_easy_setopt(pkt_post_, CURLOPT_POSTFIELDSIZE, postdata.size());
-  CURLcode res = curl_easy_perform(pkt_post_);
+  curl_easy_setopt(detailed_report_handle_, CURLOPT_POSTFIELDS, postdata.c_str());
+  curl_easy_setopt(detailed_report_handle_, CURLOPT_POSTFIELDSIZE, postdata.size());
+  CURLcode res = curl_easy_perform(detailed_report_handle_);
   if (res != CURLE_OK) {
     fprintf(stderr, "ERROR: curl perform failed %d(%s): %s\n",
             res, curl_easy_strerror(res),
             // errbuf might not have been populated
-            pkt_post_errbuf_[0] ? pkt_post_errbuf_ : "");
+            detailed_report_post_errbuf_[0] ? detailed_report_post_errbuf_ : "");
     return false;
   }
 
@@ -74,16 +74,16 @@ size_t ElasticSearchInterface::curl_null_cb(void * /*buffer*/, size_t size, size
 }
 
 void ElasticSearchInterface::setup_es_document() {
-  std::string url = address_ + "analyst/";
+  std::string url = base_address_ + "analyst/";
 
   CURL *handle = curl_easy_init();
   curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
   curl_easy_setopt(handle, CURLOPT_POST, 1);
-  curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, pkt_post_errbuf_);
+  curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, detailed_report_post_errbuf_);
   curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, curl_null_cb);
 
   // magic JSON, update accordingly
-  std::string postdata = "{\"mappings\":{\"report\":{\"properties\":{\"time\":{\"type\":\"date\", \"format\":\"epoch_millis\"}}}}}";
+  std::string postdata = "{\"mappings\":{\"report-details\":{\"properties\":{\"time\":{\"type\":\"date\", \"format\":\"epoch_millis\"}}}}}";
   curl_easy_setopt(handle, CURLOPT_POSTFIELDS, postdata.c_str());
   curl_easy_setopt(handle, CURLOPT_POSTFIELDSIZE, postdata.size());
 
@@ -92,7 +92,7 @@ void ElasticSearchInterface::setup_es_document() {
     fprintf(stderr, "WARNING: ES document init failed %d(%s): %s\n",
             res, curl_easy_strerror(res),
             // errbuf might not have been populated
-            pkt_post_errbuf_[0] ? pkt_post_errbuf_ : "");
+            detailed_report_post_errbuf_[0] ? detailed_report_post_errbuf_ : "");
 
   curl_easy_cleanup(handle);
 }
