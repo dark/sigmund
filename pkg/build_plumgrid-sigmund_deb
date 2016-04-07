@@ -2,7 +2,7 @@
 
 WDIR=$(readlink -m `pwd`/..)
 
-PKG_PREFIX=sigmund
+PKG_PREFIX=plumgrid-sigmund
 PKG_DESCRIPTION="SIGnatures Monitor and UNifier Daemon"
 PKG_ARCH="amd64"
 . ${WDIR}/pkg/deb-functions.sh
