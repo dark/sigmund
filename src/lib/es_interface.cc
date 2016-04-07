@@ -136,6 +136,8 @@ std::string ElasticSearchInterface::pb2json(const freudpb::Report &pb) {
   result += ", ";
   append_kv_string(&result, "basename", basename(pb.procname().c_str()));
   result += ", ";
+  append_kv_string(&result, "type", pb.type() == freudpb::Report::SUMMARY ? "summary" : "detailed");
+  result += ", ";
   // normalize usec to msec (that's what ES expects)
   append_kv_uint64(&result, "time", pb.usec_ts() / 1000);
   result += ", ";
