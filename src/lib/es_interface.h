@@ -39,15 +39,19 @@ class ElasticSearchInterface {
 
  private:
   std::string base_address_;
-  freudpb::TrackedInstance pkt_post_pb_;
+  freudpb::Report pkt_post_pb_;
+
+  std::string summary_report_post_url_;
+  CURL *summary_report_handle_;
+  char summary_report_post_errbuf_[CURL_ERROR_SIZE];
 
   std::string detailed_report_post_url_;
   CURL *detailed_report_handle_;
   char detailed_report_post_errbuf_[CURL_ERROR_SIZE];
 
-  void setup_es_document();
+  void setup_es_documents();
 
-  std::string pb2json(const freudpb::TrackedInstance &pb);
+  std::string pb2json(const freudpb::Report &pb);
   void append_kv_int32(std::string *s, const std::string &k, const int32_t v);
   void append_kv_uint32(std::string *s, const std::string &k, const uint32_t v);
   void append_kv_uint64(std::string *s, const std::string &k, const uint64_t v);

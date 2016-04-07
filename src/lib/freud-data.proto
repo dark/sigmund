@@ -13,18 +13,32 @@ message KeyValue {
   optional uint64 value_u64 = 4;
 }
 
-message TrackedInstance {
+message Report {
+  enum ReportType {
+    SUMMARY = 0;
+    DETAILED = 1;
+  }
+
   // General process info
   required int32 pid = 1; // PID of the process enclosing the instance
   required string procname = 2; // filename of the process image
+  required ReportType type = 3; // the type of report; it changes the
+                                // meaning of a few fields below, see
+                                // comments
 
   // Instance-specific info
-  required uint64 usec_ts = 3; // timestamp of capture as usec since the epoch
-  required string module_name = 4; // name of the module enclosing the instance
-  required uint64 instance_id = 5; // instance ID
+  required uint64 usec_ts = 4; // timestamp of capture as usecs since the epoch
+  required string module_name = 5; // name of the module enclosing the instance
+  required uint64 instance_id = 6; // if report is DETAILED, instance
+                                   // ID; otherwise, the number of
+                                   // instances tracked under this
+                                   // module
 
-  repeated uint64 trace = 6; // array of PCs of the stack trace
-  repeated KeyValue generic_info = 7; // generic information
-  repeated KeyValue module_info = 8; // module-specific information
-  optional string instance_info = 9; // instance-specific information
+  repeated uint64 trace = 7; // array of PCs of the stack trace; empty
+                             // if report is SUMMARY
+  repeated KeyValue generic_info = 8; // generic information
+  repeated KeyValue module_info = 9;  // module-specific information
+  optional string instance_info = 10; // instance-specific
+                                      // information; empty if report
+                                      // is SUMMARY
 }

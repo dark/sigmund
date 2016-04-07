@@ -24,22 +24,31 @@ namespace freud {
 namespace lib {
 
 ElasticSearchInterface::ElasticSearchInterface(const std::string &address)
-    : base_address_(address), detailed_report_handle_(NULL) {
-  detailed_report_post_url_ = base_address_ + "analyst/report-details/";
+    : base_address_(address), summary_report_handle_(NULL), detailed_report_handle_(NULL) {
+  summary_report_post_url_ = base_address_ + "analyst/summary-report/";
+  detailed_report_post_url_ = base_address_ + "analyst/detailed-report/";
 }
 
 bool ElasticSearchInterface::init() {
-  // setup the document in ES if it does not exist; failures should be ignored
-  setup_es_document();
+  // setup the documents in ES if they do not exist; failures should be ignored
+  setup_es_documents();
 
   // init all handles
+  summary_report_handle_ = curl_easy_init();
+  curl_easy_setopt(summary_report_handle_, CURLOPT_URL, summary_report_post_url_.c_str());
+  curl_easy_setopt(summary_report_handle_, CURLOPT_POST, 1);
+  curl_easy_setopt(summary_report_handle_, CURLOPT_ERRORBUFFER, summary_report_post_errbuf_);
+  // suppress all data output with a null callback
+  curl_easy_setopt(summary_report_handle_, CURLOPT_WRITEFUNCTION, curl_null_cb);
+  // DEBUG ONLY
+  //curl_easy_setopt(summary_report_handle_, CURLOPT_VERBOSE, 1);
+
   detailed_report_handle_ = curl_easy_init();
   curl_easy_setopt(detailed_report_handle_, CURLOPT_URL, detailed_report_post_url_.c_str());
   curl_easy_setopt(detailed_report_handle_, CURLOPT_POST, 1);
   curl_easy_setopt(detailed_report_handle_, CURLOPT_ERRORBUFFER, detailed_report_post_errbuf_);
   // suppress all data output with a null callback
   curl_easy_setopt(detailed_report_handle_, CURLOPT_WRITEFUNCTION, curl_null_cb);
-
   // DEBUG ONLY
   //curl_easy_setopt(detailed_report_handle_, CURLOPT_VERBOSE, 1);
 
@@ -55,15 +64,37 @@ bool ElasticSearchInterface::post_packet(const std::string &s) {
 
   std::string postdata = pb2json(pkt_post_pb_);
 
-  curl_easy_setopt(detailed_report_handle_, CURLOPT_POSTFIELDS, postdata.c_str());
-  curl_easy_setopt(detailed_report_handle_, CURLOPT_POSTFIELDSIZE, postdata.size());
-  CURLcode res = curl_easy_perform(detailed_report_handle_);
-  if (res != CURLE_OK) {
-    fprintf(stderr, "ERROR: curl perform failed %d(%s): %s\n",
-            res, curl_easy_strerror(res),
-            // errbuf might not have been populated
-            detailed_report_post_errbuf_[0] ? detailed_report_post_errbuf_ : "");
-    return false;
+  // select URL destination based on report type
+  switch (pkt_post_pb_.type()) {
+    case freudpb::Report::SUMMARY:
+      {
+        curl_easy_setopt(summary_report_handle_, CURLOPT_POSTFIELDS, postdata.c_str());
+        curl_easy_setopt(summary_report_handle_, CURLOPT_POSTFIELDSIZE, postdata.size());
+        CURLcode res = curl_easy_perform(summary_report_handle_);
+        if (res != CURLE_OK) {
+          fprintf(stderr, "ERROR: curl perform failed for summary report %d(%s): %s\n",
+                  res, curl_easy_strerror(res),
+                  // errbuf might not have been populated
+                  summary_report_post_errbuf_[0] ? summary_report_post_errbuf_ : "");
+          return false;
+        }
+      }
+      break;
+
+    case freudpb::Report::DETAILED:
+      {
+        curl_easy_setopt(detailed_report_handle_, CURLOPT_POSTFIELDS, postdata.c_str());
+        curl_easy_setopt(detailed_report_handle_, CURLOPT_POSTFIELDSIZE, postdata.size());
+        CURLcode res = curl_easy_perform(detailed_report_handle_);
+        if (res != CURLE_OK) {
+          fprintf(stderr, "ERROR: curl perform failed for detailed report %d(%s): %s\n",
+                  res, curl_easy_strerror(res),
+                  // errbuf might not have been populated
+                  detailed_report_post_errbuf_[0] ? detailed_report_post_errbuf_ : "");
+          return false;
+        }
+      }
+      break;
   }
 
   return true;
@@ -73,7 +104,7 @@ size_t ElasticSearchInterface::curl_null_cb(void * /*buffer*/, size_t size, size
   return size * nmemb;
 }
 
-void ElasticSearchInterface::setup_es_document() {
+void ElasticSearchInterface::setup_es_documents() {
   std::string url = base_address_ + "analyst/";
 
   CURL *handle = curl_easy_init();
@@ -83,7 +114,7 @@ void ElasticSearchInterface::setup_es_document() {
   curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, curl_null_cb);
 
   // magic JSON, update accordingly
-  std::string postdata = "{\"mappings\":{\"report-details\":{\"properties\":{\"time\":{\"type\":\"date\", \"format\":\"epoch_millis\"}}}}}";
+  std::string postdata = "{\"mappings\":{\"summary-report\":{\"properties\":{\"time\":{\"type\":\"date\", \"format\":\"epoch_millis\"}}},\"detailed-report\":{\"properties\":{\"time\":{\"type\":\"date\", \"format\":\"epoch_millis\"}}}}}";
   curl_easy_setopt(handle, CURLOPT_POSTFIELDS, postdata.c_str());
   curl_easy_setopt(handle, CURLOPT_POSTFIELDSIZE, postdata.size());
 
@@ -97,7 +128,7 @@ void ElasticSearchInterface::setup_es_document() {
   curl_easy_cleanup(handle);
 }
 
-std::string ElasticSearchInterface::pb2json(const freudpb::TrackedInstance &pb) {
+std::string ElasticSearchInterface::pb2json(const freudpb::Report &pb) {
   std::string result = "{ ";
   append_kv_int32(&result, "pid", pb.pid());
   result += ", ";
@@ -110,12 +141,17 @@ std::string ElasticSearchInterface::pb2json(const freudpb::TrackedInstance &pb) 
   result += ", ";
   append_kv_string(&result, "module", pb.module_name());
   result += ", ";
-  append_kv_uint64(&result, "instance", pb.instance_id());
-  result += ", ";
+  if (pb.type() == freudpb::Report::SUMMARY) {
+    append_kv_uint64(&result, "instances", pb.instance_id());
+    result += ", ";
+  } else {
+    append_kv_uint64(&result, "instance", pb.instance_id());
+    result += ", ";
+  }
 
-  // append array of traces
-  result += "\"trace\": [";
-  {
+  // if not a summary, append array of traces
+  if (pb.type() == freudpb::Report::DETAILED) {
+    result += "\"trace\": [";
     bool first = true;
     for (const uint64_t &t : pb.trace()) {
       if (first)
@@ -125,8 +161,8 @@ std::string ElasticSearchInterface::pb2json(const freudpb::TrackedInstance &pb) 
       result += std::to_string(t);
       first = false;
     }
+    result += "], ";
   }
-  result += "], ";
 
   // append generic info
   result += "\"generic_info\": {";
@@ -138,8 +174,8 @@ std::string ElasticSearchInterface::pb2json(const freudpb::TrackedInstance &pb) 
   append_kv_list(&result, pb.module_info());
   result += "} ";
 
-  // append instance info, if present
-  if (pb.has_instance_info()) {
+  // append instance info, if meaningful and present
+  if (pb.type() == freudpb::Report::DETAILED && pb.has_instance_info()) {
     result += ", ";
     append_kv_string(&result, "instance_info", pb.instance_info());
   }
