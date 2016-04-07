@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <condition_variable>
 #include <mutex>
+#include "version.h"
 #include "lib/db_interface.h"
 #include "lib/es_interface.h"
 #include "lib/threaded_udp_srv.h"
@@ -85,6 +86,8 @@ void delete_portfile() {
 }
 
 int main (void) {
+  fprintf(stderr, "INFO: Sigmund %s starting\n", freud::version::g_GIT_DESCRIPTION);
+
   if (!setup_signal_handler()) {
     fprintf(stderr, "ERROR: failed to setup signal handler\n");
     return 1;
