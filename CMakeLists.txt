@@ -22,3 +22,4 @@ message(STATUS "Git HEAD is ${GIT_SHA1}")
 ################################
 
 add_subdirectory(src)
+add_subdirectory(pkg)

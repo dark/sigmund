@@ -1,0 +1,35 @@
+#!/bin/bash
+
+WDIR=$(readlink -m `pwd`/..)
+
+PKG_PREFIX=sigmund
+PKG_DESCRIPTION="SIGnatures Monitor and UNifier Daemon"
+PKG_ARCH="amd64"
+. ${WDIR}/pkg/deb-functions.sh
+
+# determine version
+compute_deb_version
+
+# trap keyboard interrupt (control-c)
+trap control_c SIGINT
+
+rm -f ${WDIR}/${PKG_PREFIX}_*.deb
+
+BDIR_BASE=${WDIR}/${PKG_PREFIX}_${PG_DEBVERSION}_${PKG_ARCH}
+rm -rf ${BDIR_BASE}
+
+# copy all files to their destination
+mkdir -p ${BDIR_BASE}/usr/bin/
+cp ${WDIR}/src/sigmund ${BDIR_BASE}/usr/bin/sigmund
+#####################################
+
+PKG_DEPS="libsqlite3-0, libcurl3, libprotobuf7"
+
+gen_control_file  "${PKG_PREFIX}"  "${PG_DEBVERSION}"  "${PKG_ARCH}" "${PKG_DESCRIPTION}" "${PKG_DEPS}"
+
+build_package
+status=$?
+
+rm -rf ${BDIR_BASE}
+echo "Package build exiting with status: ${status}"
+exit $status
