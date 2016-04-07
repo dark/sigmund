@@ -1,0 +1,29 @@
+# Stores the refspec of the current branch.
+# Usually "refs/heads/master".
+declare -r GIT_REFSPEC="@GIT_REFSPEC@"
+
+# Stores the full SHA-1 hash (40 characters) of the current Git
+# commit.
+declare -r GIT_SHA1="@GIT_SHA1@"
+
+# Stores the SHA-1 hash of the current Git commit, shortened to 8
+# characters (as git-log's --abbrev-commit would do).
+declare -r GIT_SHA1_SHORT="@GIT_SHA1_SHORT@"
+
+# Stores the result of git-describe. See 'man git-describe' for more
+# details.
+declare -r GIT_DESCRIPTION="@GIT_DESCRIPTION@"
+
+# Stores the name of the first annotated tag that is found by walking
+# back the history of current HEAD (in other words, this is the most
+# recent annotated tag that appears in the history of the current
+# branch).
+declare -r GIT_TAG_LAST="@GIT_TAG_LAST@"
+
+# If the current commit is pointed at by an annotated tag, then this
+# constant stores the name of that tag. Otherwise, this constant is
+# empty ("").
+#
+# Please note that if this constant is non-empty, then it is also
+# equivalent to GIT_TAG_LAST and GIT_DESCRIPTION.
+declare -r GIT_TAG_EXACT="@GIT_TAG_EXACT@"
