@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include <string>
 #include <curl/curl.h>
+#include "lib/configurator.h"
 #include "lib/freud-data.pb.h"
 
 namespace freud {
@@ -28,7 +29,7 @@ namespace lib {
 
 class ElasticSearchInterface {
  public:
-  explicit ElasticSearchInterface(const std::string &address);
+  explicit ElasticSearchInterface(const Configurator &config);
   ~ElasticSearchInterface() = default;
 
   bool init();

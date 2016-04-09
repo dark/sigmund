@@ -23,6 +23,7 @@
 #include <condition_variable>
 #include <mutex>
 #include "version.h"
+#include "lib/configurator.h"
 #include "lib/db_interface.h"
 #include "lib/es_interface.h"
 #include "lib/threaded_udp_srv.h"
@@ -30,9 +31,6 @@
 std::mutex signal_mutex;
 std::condition_variable signal_cv;
 int last_signal = 0;
-
-#define DATABASE_DIR "/var/lib/sigmund/"
-#define PORTFILE "/run/sigmund/portfile"
 
 void signal_handler(const int signum) {
   if (signum != SIGTERM && signum != SIGINT)
@@ -65,24 +63,24 @@ bool setup_signal_handler() {
   return true;
 }
 
-void create_portfile(const uint16_t port) {
-  FILE* fp = fopen(PORTFILE, "w");
+void create_portfile(const freud::lib::Configurator &config, const uint16_t port) {
+  FILE* fp = fopen(config.get_portfile_filename().c_str(), "w");
   if (!fp) {
-    fprintf(stderr, "ERROR: fopen portfile %s: %s\n", PORTFILE, strerror(errno));
+    fprintf(stderr, "ERROR: fopen portfile %s: %s\n", config.get_portfile_filename().c_str(), strerror(errno));
     return;
   }
   fprintf(fp, "%d\n", port);
   fclose(fp);
 
-  fprintf(stderr, "INFO: portfile %s created\n", PORTFILE);
+  fprintf(stderr, "INFO: portfile %s created\n", config.get_portfile_filename().c_str());
 }
 
-void delete_portfile() {
-  if (unlink(PORTFILE) < 0) {
-    fprintf(stderr, "ERROR: unlink portfile %s: %s\n", PORTFILE, strerror(errno));
+void delete_portfile(const freud::lib::Configurator &config) {
+  if (unlink(config.get_portfile_filename().c_str()) < 0) {
+    fprintf(stderr, "ERROR: unlink portfile %s: %s\n", config.get_portfile_filename().c_str(), strerror(errno));
     return;
   }
-  fprintf(stderr, "INFO: portfile %s deleted\n", PORTFILE);
+  fprintf(stderr, "INFO: portfile %s deleted\n", config.get_portfile_filename().c_str());
 }
 
 int main (void) {
@@ -93,26 +91,29 @@ int main (void) {
     return 1;
   }
 
+  // read configuration
+  freud::lib::Configurator config;
+
   // setup modules
-  freud::lib::DBInterface db(DATABASE_DIR);
+  freud::lib::DBInterface db(config);
   if (!db.init()) {
     fprintf(stderr, "ERROR: could not init db\n");
     return 1;
   }
 
-  freud::lib::ElasticSearchInterface es("http://localhost:9200/");
+  freud::lib::ElasticSearchInterface es(config);
   if (!es.init()) {
     fprintf(stderr, "ERROR: could not init ElasticSearch interface\n");
     return 1;
   }
 
-  freud::lib::Dispatcher dispatcher(&db, &es);
+  freud::lib::Dispatcher dispatcher(config, &db, &es);
 
   freud::lib::ThreadedUDPServer udp(&dispatcher);
   uint16_t port = udp.start_listening();
   fprintf(stderr, "INFO: UDP server listening on port: %d\n", port);
 
-  create_portfile(port);
+  create_portfile(config, port);
 
   // the big waiting loop
   while (true) {
@@ -128,7 +129,7 @@ int main (void) {
     last_signal = 0;
   }
 
-  delete_portfile();
+  delete_portfile(config);
 
   // stop all modules
   fprintf(stderr, "INFO: requesting UDP server shutdown\n");

@@ -21,8 +21,9 @@
 namespace freud {
 namespace lib {
 
-DBInterface::DBInterface(const std::string &db_directory)
-    : db_directory_(db_directory), fini_called_(false), db_handle_(NULL), insert_pkt_cache_(NULL) {
+DBInterface::DBInterface(const Configurator &config)
+    : db_directory_(config.get_database_directory()), fini_called_(false),
+      db_handle_(NULL), insert_pkt_cache_(NULL) {
   db_filename_ = db_directory_ + "/sqlite.db";
 }
 

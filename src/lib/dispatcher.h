@@ -28,7 +28,7 @@ namespace lib {
 
 class Dispatcher {
  public:
-  Dispatcher(DBInterface *db, ElasticSearchInterface *es);
+  Dispatcher(const Configurator &config, DBInterface *db, ElasticSearchInterface *es);
   ~Dispatcher();
 
   // this method transfers ownership of the pointer inside the
@@ -44,6 +44,9 @@ class Dispatcher {
   ElasticSearchInterface *es_;
   SyncQueue<std::string> inbound_queue_;
   std::thread *worker_;
+
+  const bool cache_packets_in_db_;
+  const bool send_packets_to_es_;
 
   void worker_fn();
   void wait();

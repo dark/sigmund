@@ -21,8 +21,10 @@
 namespace freud {
 namespace lib {
 
-Dispatcher::Dispatcher(DBInterface *db, ElasticSearchInterface *es)
-    : db_(db), es_(es) {
+Dispatcher::Dispatcher(const Configurator &config, DBInterface *db, ElasticSearchInterface *es)
+    : db_(db), es_(es),
+      cache_packets_in_db_(config.get_cache_packets_in_db()),
+      send_packets_to_es_(config.get_send_packets_to_es()) {
   worker_ = new std::thread(&Dispatcher::worker_fn, this);
 }
 
@@ -50,10 +52,10 @@ void Dispatcher::worker_fn() {
       // stop processing events
       break;
 
-    if (!db_->cache_packet(*s))
+    if (cache_packets_in_db_ && !db_->cache_packet(*s))
       fprintf(stderr, "WARNING: could not cache packet in database\n");
 
-    if (!es_->post_packet(*s))
+    if (send_packets_to_es_ && !es_->post_packet(*s))
       fprintf(stderr, "WARNING: could not post packet to ElasticSearch\n");
 
     delete s;

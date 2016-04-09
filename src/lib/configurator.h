@@ -19,32 +19,28 @@
 #pragma once
 
 #include <string>
-#include <sqlite3.h>
-#include "lib/configurator.h"
 
 namespace freud {
 namespace lib {
 
-class DBInterface {
+class Configurator {
  public:
-  explicit DBInterface(const Configurator &config);
-  ~DBInterface();
+  Configurator();
+  ~Configurator() = default;
 
-  bool init();
-  void fini();
-
-  bool cache_packet(const std::string &s);
+  const std::string& get_database_directory() const;
+  const std::string& get_portfile_filename() const;
+  const std::string& get_elastic_search_url() const;
+  bool get_cache_packets_in_db() const;
+  bool get_send_packets_to_es() const;
 
  private:
-  std::string db_directory_;
-  std::string db_filename_;
-  bool fini_called_;
-  sqlite3 *db_handle_;
+  std::string database_directory_;
+  std::string portfile_filename_;
+  std::string elastic_search_url_;
 
-  // prepared statements
-  sqlite3_stmt *insert_pkt_cache_;
-
-  void close_handle();
+  bool cache_packets_in_db_;
+  bool send_packets_to_es_;
 };
 
 } // namespace lib

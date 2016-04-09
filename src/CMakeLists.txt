@@ -11,4 +11,4 @@ add_library(version "${CMAKE_CURRENT_BINARY_DIR}/version.cc")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/version.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/version.sh" @ONLY)
 
 add_executable(sigmund sigmund.cc)
-target_link_libraries(sigmund db_ifc es_ifc dispatcher udp_srv version)
+target_link_libraries(sigmund db_ifc es_ifc dispatcher udp_srv version config)

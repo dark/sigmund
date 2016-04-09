@@ -16,36 +16,38 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#include <string>
-#include <sqlite3.h>
 #include "lib/configurator.h"
 
 namespace freud {
 namespace lib {
 
-class DBInterface {
- public:
-  explicit DBInterface(const Configurator &config);
-  ~DBInterface();
+Configurator::Configurator() {
+  database_directory_ = "/var/lib/sigmund/";
+  portfile_filename_ = "/run/sigmund/portfile";
+  elastic_search_url_ = "http://localhost:9200/";
+  cache_packets_in_db_ = false;
+  send_packets_to_es_ = true;
+}
 
-  bool init();
-  void fini();
+const std::string& Configurator::get_database_directory() const {
+  return database_directory_;
+}
 
-  bool cache_packet(const std::string &s);
+const std::string& Configurator::get_portfile_filename() const {
+  return portfile_filename_;
+}
 
- private:
-  std::string db_directory_;
-  std::string db_filename_;
-  bool fini_called_;
-  sqlite3 *db_handle_;
+const std::string& Configurator::get_elastic_search_url() const {
+  return elastic_search_url_;
+}
 
-  // prepared statements
-  sqlite3_stmt *insert_pkt_cache_;
+bool Configurator::get_cache_packets_in_db() const {
+  return cache_packets_in_db_;
+}
 
-  void close_handle();
-};
+bool Configurator::get_send_packets_to_es() const {
+  return send_packets_to_es_;
+}
 
 } // namespace lib
 } // namespace freud

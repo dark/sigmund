@@ -23,8 +23,8 @@
 namespace freud {
 namespace lib {
 
-ElasticSearchInterface::ElasticSearchInterface(const std::string &address)
-    : base_address_(address), summary_report_handle_(NULL), detailed_report_handle_(NULL) {
+ElasticSearchInterface::ElasticSearchInterface(const Configurator &config)
+    : base_address_(config.get_elastic_search_url()), summary_report_handle_(NULL), detailed_report_handle_(NULL) {
   summary_report_post_url_ = base_address_ + "analyst/summary-report/";
   detailed_report_post_url_ = base_address_ + "analyst/detailed-report/";
 }
