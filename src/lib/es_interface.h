@@ -42,6 +42,8 @@ class ElasticSearchInterface {
   std::string base_address_;
   freudpb::Report pkt_post_pb_;
 
+  std::string hostname_;
+
   std::string summary_report_post_url_;
   CURL *summary_report_handle_;
   char summary_report_post_errbuf_[CURL_ERROR_SIZE];

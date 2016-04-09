@@ -19,6 +19,7 @@
 #include "lib/es_interface.h"
 
 #include <string.h> // for basename
+#include <unistd.h> // for gethostname
 
 namespace freud {
 namespace lib {
@@ -27,6 +28,21 @@ ElasticSearchInterface::ElasticSearchInterface(const Configurator &config)
     : base_address_(config.get_elastic_search_url()), summary_report_handle_(NULL), detailed_report_handle_(NULL) {
   summary_report_post_url_ = base_address_ + "analyst/summary-report/";
   detailed_report_post_url_ = base_address_ + "analyst/detailed-report/";
+
+  char buf[256];
+  if (gethostname(buf, sizeof(buf)) < 0) {
+    // error case
+    hostname_ = "undefined";
+  } else {
+    // success case
+
+    // man gethostname(2) states that POSIX does not require
+    // gethostname() to raise an error if a name truncation occurred;
+    // hence, to be safe, always put a \0 at the end of the buffer
+    buf[sizeof(buf) - 1] = '\0';
+
+    hostname_ = buf;
+  }
 }
 
 bool ElasticSearchInterface::init() {
@@ -131,6 +147,8 @@ void ElasticSearchInterface::setup_es_documents() {
 std::string ElasticSearchInterface::pb2json(const freudpb::Report &pb) {
   std::string result = "{ ";
   append_kv_int32(&result, "pid", pb.pid());
+  result += ", ";
+  append_kv_string(&result, "hostname", hostname_);
   result += ", ";
   append_kv_string(&result, "procname", pb.procname());
   result += ", ";
