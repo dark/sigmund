@@ -229,6 +229,14 @@ void ElasticSearchInterface::append_kv_uint64(std::string *s, const std::string 
   s->append(" ");
 }
 
+void ElasticSearchInterface::append_kv_double(std::string *s, const std::string &k, const double &v) {
+  s->append("\"");
+  s->append(k);
+  s->append("\": ");
+  s->append(std::to_string(v));
+  s->append(" ");
+}
+
 void ElasticSearchInterface::append_kv_string(std::string *s, const std::string &k, const std::string &v) {
   s->append("\"");
   s->append(k);
@@ -257,6 +265,17 @@ void ElasticSearchInterface::append_kv_list(std::string *s,
         }
         break;
 
+      case freudpb::KeyValue::SINT32:
+        if (kv.has_value_s32()) {
+          if (!first)
+            s->append(", ");
+          append_kv_int32(s, kv.key(), kv.value_s32());
+          first = false;
+        } else {
+          fprintf(stderr, "WARNING: %s int32 not found for key %s\n", __FUNCTION__, kv.key().c_str());
+        }
+        break;
+
       case freudpb::KeyValue::UINT64:
         if (kv.has_value_u64()) {
           if (!first)
@@ -265,6 +284,17 @@ void ElasticSearchInterface::append_kv_list(std::string *s,
           first = false;
         } else {
           fprintf(stderr, "WARNING: %s uint64 not found for key %s\n", __FUNCTION__, kv.key().c_str());
+        }
+        break;
+
+      case freudpb::KeyValue::DOUBLE:
+        if (kv.has_value_dbl()) {
+          if (!first)
+            s->append(", ");
+          append_kv_double(s, kv.key(), kv.value_dbl());
+          first = false;
+        } else {
+          fprintf(stderr, "WARNING: %s double not found for key %s\n", __FUNCTION__, kv.key().c_str());
         }
         break;
     }
