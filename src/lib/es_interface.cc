@@ -154,6 +154,8 @@ std::string ElasticSearchInterface::pb2json(const freudpb::Report &pb) {
   result += ", ";
   append_kv_string(&result, "basename", basename(pb.procname().c_str()));
   result += ", ";
+  append_kv_string(&result, "pgname", pb.pgname());
+  result += ", ";
   append_kv_string(&result, "type", pb.type() == freudpb::Report::SUMMARY ? "summary" : "detailed");
   result += ", ";
   // normalize usec to msec (that's what ES expects)
@@ -214,6 +216,14 @@ void ElasticSearchInterface::append_kv_int32(std::string *s, const std::string &
 }
 
 void ElasticSearchInterface::append_kv_uint32(std::string *s, const std::string &k, const uint32_t v) {
+  s->append("\"");
+  s->append(k);
+  s->append("\": ");
+  s->append(std::to_string(v));
+  s->append(" ");
+}
+
+void ElasticSearchInterface::append_kv_int64(std::string *s, const std::string &k, const int64_t v) {
   s->append("\"");
   s->append(k);
   s->append("\": ");
@@ -284,6 +294,17 @@ void ElasticSearchInterface::append_kv_list(std::string *s,
           first = false;
         } else {
           fprintf(stderr, "WARNING: %s uint64 not found for key %s\n", __FUNCTION__, kv.key().c_str());
+        }
+        break;
+
+      case freudpb::KeyValue::SINT64:
+        if (kv.has_value_s64()) {
+          if (!first)
+            s->append(", ");
+          append_kv_int64(s, kv.key(), kv.value_s64());
+          first = false;
+        } else {
+          fprintf(stderr, "WARNING: %s int64 not found for key %s\n", __FUNCTION__, kv.key().c_str());
         }
         break;
 

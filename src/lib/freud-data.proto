@@ -7,7 +7,7 @@ message KeyValue {
     UINT32 = 1;
     UINT64 = 2;
     SINT32 = 3;
-    // reserved for: SINT64 = 4;
+    SINT64 = 4;
     DOUBLE = 5;
   }
   required string key = 1;
@@ -15,7 +15,7 @@ message KeyValue {
   optional uint32 value_u32 = 3;
   optional uint64 value_u64 = 4;
   optional int32 value_s32 = 5;
-  // resrved for: optional int64 value_s64 = 6;
+  optional int64 value_s64 = 6;
   optional double value_dbl = 7;
 }
 
@@ -28,23 +28,24 @@ message Report {
   // General process info
   required int32 pid = 1; // PID of the process enclosing the instance
   required string procname = 2; // filename of the process image
-  required ReportType type = 3; // the type of report; it changes the
+  required string pgname = 3; // pgname of the process
+  required ReportType type = 4; // the type of report; it changes the
                                 // meaning of a few fields below, see
                                 // comments
 
   // Instance-specific info
-  required uint64 usec_ts = 4; // timestamp of capture as usecs since the epoch
-  required string module_name = 5; // name of the module enclosing the instance
-  required uint64 instance_id = 6; // if report is DETAILED, instance
+  required uint64 usec_ts = 5; // timestamp of capture as usecs since the epoch
+  required string module_name = 6; // name of the module enclosing the instance
+  required uint64 instance_id = 7; // if report is DETAILED, instance
                                    // ID; otherwise, the number of
                                    // instances tracked under this
                                    // module
 
-  repeated uint64 trace = 7; // array of PCs of the stack trace; empty
+  repeated uint64 trace = 8; // array of PCs of the stack trace; empty
                              // if report is SUMMARY
-  repeated KeyValue generic_info = 8; // generic information
-  repeated KeyValue module_info = 9;  // module-specific information
-  optional string instance_info = 10; // instance-specific
+  repeated KeyValue generic_info = 9; // generic information
+  repeated KeyValue module_info = 10; // module-specific information
+  optional string instance_info = 11; // instance-specific
                                       // information; empty if report
                                       // is SUMMARY
 }
