@@ -83,7 +83,7 @@ void delete_portfile(const freud::lib::Configurator &config) {
   fprintf(stderr, "INFO: portfile %s deleted\n", config.get_portfile_filename().c_str());
 }
 
-int main (void) {
+int main(const int argc, const char *argv[]) {
   fprintf(stderr, "INFO: Sigmund %s starting\n", freud::version::g_GIT_DESCRIPTION);
 
   if (!setup_signal_handler()) {
@@ -92,7 +92,7 @@ int main (void) {
   }
 
   // read configuration
-  freud::lib::Configurator config;
+  freud::lib::Configurator config(argc, argv);
 
   // setup modules
   freud::lib::DBInterface db(config);

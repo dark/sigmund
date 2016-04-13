@@ -25,7 +25,11 @@ namespace lib {
 
 class Configurator {
  public:
+  // this constructor initializes the configuration using default values
   Configurator();
+  // read config from argc/argv, or use defaults when not available
+  Configurator(const int argc, const char *argv[]);
+
   ~Configurator() = default;
 
   const std::string& get_database_directory() const;
@@ -41,6 +45,10 @@ class Configurator {
 
   bool cache_packets_in_db_;
   bool send_packets_to_es_;
+
+  void read_config_from_file(FILE *fp);
+  static bool parse_string(const char *buf, std::string *output);
+  static bool parse_bool(const char *buf, bool *output);
 };
 
 } // namespace lib
