@@ -23,6 +23,8 @@ mkdir -p ${BDIR_BASE}/usr/bin/
 cp ${WDIR}/src/sigmund ${BDIR_BASE}/usr/bin/sigmund
 mkdir -p ${BDIR_BASE}/etc/sigmund/
 cp ${WDIR}/../conf/sigmund.conf.example ${BDIR_BASE}/etc/sigmund/sigmund.conf.example
+mkdir -p ${BDIR_BASE}/etc/init/
+cp ${WDIR}/../init/plumgrid-sigmund.conf ${BDIR_BASE}/etc/init/plumgrid-sigmund.conf
 #####################################
 
 PKG_DEPS="libsqlite3-0, libcurl3, libprotobuf7"
