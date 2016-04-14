@@ -22,7 +22,7 @@ rm -rf ${BDIR_BASE}
 mkdir -p ${BDIR_BASE}/usr/bin/
 cp ${WDIR}/src/sigmund ${BDIR_BASE}/usr/bin/sigmund
 mkdir -p ${BDIR_BASE}/etc/sigmund/
-cp ${WDIR}/../src/conf/sigmund.conf.example ${BDIR_BASE}/etc/sigmund/sigmund.conf.example
+cp ${WDIR}/../conf/sigmund.conf.example ${BDIR_BASE}/etc/sigmund/sigmund.conf.example
 #####################################
 
 PKG_DEPS="libsqlite3-0, libcurl3, libprotobuf7"
