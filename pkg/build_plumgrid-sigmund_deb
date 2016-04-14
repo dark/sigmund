@@ -18,11 +18,15 @@ rm -f ${WDIR}/${PKG_PREFIX}_*.deb
 BDIR_BASE=${WDIR}/${PKG_PREFIX}_${PG_DEBVERSION}_${PKG_ARCH}
 rm -rf ${BDIR_BASE}
 
-# copy all files to their destination
+## copy all files to their destination
+# binaries
 mkdir -p ${BDIR_BASE}/usr/bin/
 cp ${WDIR}/src/sigmund ${BDIR_BASE}/usr/bin/sigmund
+strip ${BDIR_BASE}/usr/bin/sigmund
+# configuration files
 mkdir -p ${BDIR_BASE}/etc/sigmund/
 cp ${WDIR}/../conf/sigmund.conf.example ${BDIR_BASE}/etc/sigmund/sigmund.conf.example
+# service files
 mkdir -p ${BDIR_BASE}/etc/init/
 cp ${WDIR}/../init/plumgrid-sigmund.conf ${BDIR_BASE}/etc/init/plumgrid-sigmund.conf
 #####################################
