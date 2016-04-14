@@ -41,7 +41,7 @@ Configurator::Configurator(const int argc, const char *argv[])
     return;
 
   fprintf(stderr, "INFO: will try and read config from %s\n", argv[1]);
-  FILE *fp = fopen(argv[1], "w");
+  FILE *fp = fopen(argv[1], "r");
   if (!fp) {
     fprintf(stderr, "ERROR: failed to open %s: %s\n", argv[1], strerror(errno));
     return;
@@ -82,6 +82,10 @@ void Configurator::read_config_from_file(FILE *fp) {
     if (retval < 0)
       // error, or EOF reached
       break;
+
+    // remove trailing newline, if any
+    if (buf[retval - 1] == '\n')
+      buf[retval - 1] = '\0';
 
     // all lines must follow an exact syntax
     if (strncmp(buf, "db_dir=", strlen("db_dir=")) == 0) {
