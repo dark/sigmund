@@ -1,0 +1,29 @@
+#
+# This file provides example configuration options for Sigmund.
+#
+# The format of this file is strictly:
+#  key=value
+# with no spaces allowed. Any line that does not map to a known
+# configiration item is silently ignored.
+#
+# The format of the string values depends on the context (a directory,
+# a URL, etc..).
+# Boolean values must be exactly 'false' or 'true' (without the quotes).
+#
+# The list of known items follows, including their default values.
+
+## Directory to be used for the database file.
+## It needs to be writable by the user the daemon is run as.
+#db_dir=/var/lib/sigmund/
+
+## Filename of the portfile used to advertise the listening UDP port.
+#portfile=/run/sigmund/portfile
+
+## URL at which ElasticSearch is running
+#es_url=http://localhost:9200/
+
+## Whether packets should be cached in the database or not.
+#send_to_db=false
+
+## Whether packet contents should be sent to ElasticSearch or not.
+#send_to_es=true
