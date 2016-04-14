@@ -1,6 +1,9 @@
 #
 # This file provides example configuration options for Sigmund.
 #
+# To use this config file as part of the daemon started by Upstart,
+# copy it to "/etc/sigmund/sigmund.conf" and customize what's needed.
+#
 # The format of this file is strictly:
 #  key=value
 # with no spaces allowed. Any line that does not map to a known
