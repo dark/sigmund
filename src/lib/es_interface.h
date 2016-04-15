@@ -61,7 +61,8 @@ class ElasticSearchInterface {
   void append_kv_uint64(std::string *s, const std::string &k, const uint64_t v);
   void append_kv_double(std::string *s, const std::string &k, const double &v);
   void append_kv_string(std::string *s, const std::string &k, const std::string &v);
-  void append_kv_list(std::string *s, const ::google::protobuf::RepeatedPtrField<freudpb::KeyValue> &list);
+  void append_kv_list(std::string *s, const ::google::protobuf::RepeatedPtrField<freudpb::KeyValue> &list,
+                      const std::string &prefix = "");
 };
 
 } // namespace lib

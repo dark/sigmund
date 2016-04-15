@@ -163,10 +163,7 @@ std::string ElasticSearchInterface::pb2json(const freudpb::Report &pb) {
   result += ", ";
   append_kv_string(&result, "module", pb.module_name());
   result += ", ";
-  if (pb.type() == freudpb::Report::SUMMARY) {
-    append_kv_uint64(&result, "instances", pb.instance_id());
-    result += ", ";
-  } else {
+  if (pb.type() == freudpb::Report::DETAILED) {
     append_kv_uint64(&result, "instance", pb.instance_id());
     result += ", ";
   }
@@ -186,14 +183,26 @@ std::string ElasticSearchInterface::pb2json(const freudpb::Report &pb) {
     result += "], ";
   }
 
-  // append generic info
-  result += "\"generic_info\": {";
-  append_kv_list(&result, pb.generic_info());
-  result += "}, ";
+  // if not a summary, append generic info; these info will go into
+  // the module section in that case
+  if (pb.type() == freudpb::Report::DETAILED) {
+    result += "\"generic_info\": {";
+    append_kv_list(&result, pb.generic_info());
+    result += "}, ";
+  }
 
   // append module info
   result += "\"" + pb.module_name() +"\": {";
   append_kv_list(&result, pb.module_info());
+  // if this a summary, append some metafields
+  if (pb.type() == freudpb::Report::SUMMARY) {
+    // number of instances
+    result += ", ";
+    append_kv_uint64(&result, "__instances", pb.instance_id());
+    // all data from the generic_info
+    result += ", ";
+    append_kv_list(&result, pb.generic_info(), "__");
+  }
   result += "} ";
 
   // append instance info, if meaningful and present
@@ -256,7 +265,8 @@ void ElasticSearchInterface::append_kv_string(std::string *s, const std::string 
 }
 
 void ElasticSearchInterface::append_kv_list(std::string *s,
-                                            const ::google::protobuf::RepeatedPtrField<freudpb::KeyValue> &list) {
+                                            const ::google::protobuf::RepeatedPtrField<freudpb::KeyValue> &list,
+                                            const std::string &prefix) {
   bool first = true;
   for (const freudpb::KeyValue &kv: list) {
     switch (kv.type()) {
@@ -268,7 +278,7 @@ void ElasticSearchInterface::append_kv_list(std::string *s,
         if (kv.has_value_u32()) {
           if (!first)
             s->append(", ");
-          append_kv_uint32(s, kv.key(), kv.value_u32());
+          append_kv_uint32(s, prefix + kv.key(), kv.value_u32());
           first = false;
         } else {
           fprintf(stderr, "WARNING: %s uint32 not found for key %s\n", __FUNCTION__, kv.key().c_str());
@@ -279,7 +289,7 @@ void ElasticSearchInterface::append_kv_list(std::string *s,
         if (kv.has_value_s32()) {
           if (!first)
             s->append(", ");
-          append_kv_int32(s, kv.key(), kv.value_s32());
+          append_kv_int32(s, prefix + kv.key(), kv.value_s32());
           first = false;
         } else {
           fprintf(stderr, "WARNING: %s int32 not found for key %s\n", __FUNCTION__, kv.key().c_str());
@@ -290,7 +300,7 @@ void ElasticSearchInterface::append_kv_list(std::string *s,
         if (kv.has_value_u64()) {
           if (!first)
             s->append(", ");
-          append_kv_uint64(s, kv.key(), kv.value_u64());
+          append_kv_uint64(s, prefix + kv.key(), kv.value_u64());
           first = false;
         } else {
           fprintf(stderr, "WARNING: %s uint64 not found for key %s\n", __FUNCTION__, kv.key().c_str());
@@ -301,7 +311,7 @@ void ElasticSearchInterface::append_kv_list(std::string *s,
         if (kv.has_value_s64()) {
           if (!first)
             s->append(", ");
-          append_kv_int64(s, kv.key(), kv.value_s64());
+          append_kv_int64(s, prefix + kv.key(), kv.value_s64());
           first = false;
         } else {
           fprintf(stderr, "WARNING: %s int64 not found for key %s\n", __FUNCTION__, kv.key().c_str());
@@ -312,7 +322,7 @@ void ElasticSearchInterface::append_kv_list(std::string *s,
         if (kv.has_value_dbl()) {
           if (!first)
             s->append(", ");
-          append_kv_double(s, kv.key(), kv.value_dbl());
+          append_kv_double(s, prefix + kv.key(), kv.value_dbl());
           first = false;
         } else {
           fprintf(stderr, "WARNING: %s double not found for key %s\n", __FUNCTION__, kv.key().c_str());
