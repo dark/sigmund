@@ -29,6 +29,7 @@ cp ${WDIR}/../conf/sigmund.conf.example ${BDIR_BASE}/etc/sigmund/sigmund.conf.ex
 # service files
 mkdir -p ${BDIR_BASE}/etc/init/
 cp ${WDIR}/../init/plumgrid-sigmund.conf ${BDIR_BASE}/etc/init/plumgrid-sigmund.conf
+cp ${WDIR}/../init/plumgrid-sigmund.override ${BDIR_BASE}/etc/init/plumgrid-sigmund.override
 #####################################
 
 PKG_DEPS="libsqlite3-0, libcurl3, libprotobuf7"

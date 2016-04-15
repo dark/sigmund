@@ -1,0 +1,6 @@
+# Override file for plumgrid-sigmund.
+#
+# Delete this file if you want to run the plumgrid-sigmund service at
+# startup.
+
+manual
