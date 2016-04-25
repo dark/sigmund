@@ -25,6 +25,9 @@
 ## URL at which ElasticSearch is running
 #es_url=http://localhost:9200/
 
+## ElasticSearch index to send data to
+#es_index=analyst
+
 ## Whether packets should be cached in the database or not.
 #send_to_db=false
 

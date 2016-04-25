@@ -35,6 +35,7 @@ class Configurator {
   const std::string& get_database_directory() const;
   const std::string& get_portfile_filename() const;
   const std::string& get_elastic_search_url() const;
+  const std::string& get_elastic_search_index() const;
   bool get_cache_packets_in_db() const;
   bool get_send_packets_to_es() const;
 
@@ -42,6 +43,7 @@ class Configurator {
   std::string database_directory_;
   std::string portfile_filename_;
   std::string elastic_search_url_;
+  std::string elastic_search_index_;
 
   bool cache_packets_in_db_;
   bool send_packets_to_es_;

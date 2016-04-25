@@ -39,7 +39,8 @@ class ElasticSearchInterface {
   static size_t curl_null_cb(void *buffer, size_t size, size_t nmemb, void *userp);
 
  private:
-  std::string base_address_;
+  const std::string base_address_;
+  const std::string index_name_;
   freudpb::Report pkt_post_pb_;
 
   std::string hostname_;

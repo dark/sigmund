@@ -25,9 +25,10 @@ namespace freud {
 namespace lib {
 
 ElasticSearchInterface::ElasticSearchInterface(const Configurator &config)
-    : base_address_(config.get_elastic_search_url()), summary_report_handle_(NULL), detailed_report_handle_(NULL) {
-  summary_report_post_url_ = base_address_ + "analyst/summary-report/";
-  detailed_report_post_url_ = base_address_ + "analyst/detailed-report/";
+    : base_address_(config.get_elastic_search_url()), index_name_(config.get_elastic_search_index()),
+      summary_report_handle_(NULL), detailed_report_handle_(NULL) {
+  summary_report_post_url_ = base_address_ + index_name_ + "/summary-report/";
+  detailed_report_post_url_ = base_address_ + index_name_ + "/detailed-report/";
 
   char buf[256];
   if (gethostname(buf, sizeof(buf)) < 0) {
@@ -121,7 +122,7 @@ size_t ElasticSearchInterface::curl_null_cb(void * /*buffer*/, size_t size, size
 }
 
 void ElasticSearchInterface::setup_es_documents() {
-  std::string url = base_address_ + "analyst/";
+  std::string url = base_address_ + index_name_ + "/";
 
   CURL *handle = curl_easy_init();
   curl_easy_setopt(handle, CURLOPT_URL, url.c_str());

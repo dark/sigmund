@@ -28,6 +28,8 @@ Configurator::Configurator() {
   database_directory_ = "/var/lib/sigmund/";
   portfile_filename_ = "/run/sigmund/portfile";
   elastic_search_url_ = "http://localhost:9200/";
+  elastic_search_index_ = "analyst";
+
   cache_packets_in_db_ = false;
   send_packets_to_es_ = true;
 }
@@ -62,6 +64,10 @@ const std::string& Configurator::get_portfile_filename() const {
 
 const std::string& Configurator::get_elastic_search_url() const {
   return elastic_search_url_;
+}
+
+const std::string& Configurator::get_elastic_search_index() const {
+  return elastic_search_index_;
 }
 
 bool Configurator::get_cache_packets_in_db() const {
@@ -103,6 +109,11 @@ void Configurator::read_config_from_file(FILE *fp) {
         fprintf(stderr, "WARNING: failed to parse config line '%s'\n", buf);
       else
         fprintf(stderr, "NOTICE: using Elastic Search URL '%s'\n", elastic_search_url_.c_str());
+    } else if (strncmp(buf, "es_index=", strlen("es_index=")) == 0) {
+      if (!parse_string(buf + strlen("es_index="), &elastic_search_index_))
+        fprintf(stderr, "WARNING: failed to parse config line '%s'\n", buf);
+      else
+        fprintf(stderr, "NOTICE: using Elastic Search index '%s'\n", elastic_search_index_.c_str());
     } else if (strncmp(buf, "send_to_db=", strlen("send_to_db=")) == 0) {
       if (!parse_bool(buf + strlen("send_to_db="), &cache_packets_in_db_))
         fprintf(stderr, "WARNING: failed to parse config line '%s'\n", buf);
