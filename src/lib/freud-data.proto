@@ -8,7 +8,8 @@ message KeyValue {
     UINT64 = 2;
     SINT32 = 3;
     SINT64 = 4;
-    DOUBLE = 5;
+    FLOAT = 5;
+    DOUBLE = 6;
   }
   required string key = 1;
   required Type type = 2;
@@ -16,7 +17,8 @@ message KeyValue {
   optional uint64 value_u64 = 4;
   optional int32 value_s32 = 5;
   optional int64 value_s64 = 6;
-  optional double value_dbl = 7;
+  optional float value_float = 7;
+  optional double value_dbl = 8;
 }
 
 message Report {

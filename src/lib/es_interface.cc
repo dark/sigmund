@@ -249,6 +249,14 @@ void ElasticSearchInterface::append_kv_uint64(std::string *s, const std::string 
   s->append(" ");
 }
 
+void ElasticSearchInterface::append_kv_float(std::string *s, const std::string &k, const float &v) {
+  s->append("\"");
+  s->append(k);
+  s->append("\": ");
+  s->append(std::to_string(v));
+  s->append(" ");
+}
+
 void ElasticSearchInterface::append_kv_double(std::string *s, const std::string &k, const double &v) {
   s->append("\"");
   s->append(k);
@@ -316,6 +324,17 @@ void ElasticSearchInterface::append_kv_list(std::string *s,
           first = false;
         } else {
           fprintf(stderr, "WARNING: %s int64 not found for key %s\n", __FUNCTION__, kv.key().c_str());
+        }
+        break;
+
+      case freudpb::KeyValue::FLOAT:
+        if (kv.has_value_float()) {
+          if (!first)
+            s->append(", ");
+          append_kv_float(s, prefix + kv.key(), kv.value_float());
+          first = false;
+        } else {
+          fprintf(stderr, "WARNING: %s float not found for key %s\n", __FUNCTION__, kv.key().c_str());
         }
         break;
 
