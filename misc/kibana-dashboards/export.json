@@ -68,6 +68,23 @@
     }
   },
   {
+    "_id": "DHT-messages-dashboard",
+    "_type": "dashboard",
+    "_source": {
+      "title": "DHT messages dashboard",
+      "hits": 0,
+      "description": "",
+      "panelsJSON": "[{\"col\":1,\"id\":\"DHTClientOps-percentiles:-read\",\"panelIndex\":1,\"row\":1,\"size_x\":4,\"size_y\":3,\"type\":\"visualization\"},{\"col\":5,\"id\":\"DHTClientOps-percentiles:-read-set\",\"panelIndex\":2,\"row\":1,\"size_x\":4,\"size_y\":3,\"type\":\"visualization\"},{\"col\":1,\"id\":\"DHTClientOps-percentiles:-write\",\"panelIndex\":3,\"row\":4,\"size_x\":4,\"size_y\":3,\"type\":\"visualization\"},{\"col\":5,\"id\":\"DHTClientOps-percentiles:-write-set\",\"panelIndex\":4,\"row\":4,\"size_x\":4,\"size_y\":3,\"type\":\"visualization\"},{\"col\":9,\"id\":\"DHTClientOps-percentiles:-sub\",\"panelIndex\":5,\"row\":1,\"size_x\":4,\"size_y\":3,\"type\":\"visualization\"},{\"col\":9,\"id\":\"DHTClientOps-percentiles:-unsub\",\"panelIndex\":6,\"row\":4,\"size_x\":4,\"size_y\":3,\"type\":\"visualization\"},{\"col\":1,\"id\":\"DHTClientOps-percentiles:-ku-solicited-leaf\",\"panelIndex\":7,\"row\":7,\"size_x\":3,\"size_y\":3,\"type\":\"visualization\"},{\"col\":4,\"id\":\"DHTClientOps-percentiles:-ku-solicited-set\",\"panelIndex\":8,\"row\":7,\"size_x\":3,\"size_y\":3,\"type\":\"visualization\"},{\"col\":7,\"id\":\"DHTClientOps-percentiles:-ku-unsolicited-leaf\",\"panelIndex\":9,\"row\":7,\"size_x\":3,\"size_y\":3,\"type\":\"visualization\"},{\"col\":10,\"id\":\"DHTClientOps-percentiles:-ku-unsolicited-set\",\"panelIndex\":10,\"row\":7,\"size_x\":3,\"size_y\":3,\"type\":\"visualization\"},{\"col\":1,\"id\":\"DHTClientOps-percentiles:-ping\",\"panelIndex\":11,\"row\":10,\"size_x\":3,\"size_y\":3,\"type\":\"visualization\"},{\"col\":4,\"id\":\"DHTClientOps-percentiles:-pong\",\"panelIndex\":12,\"row\":10,\"size_x\":3,\"size_y\":3,\"type\":\"visualization\"},{\"col\":7,\"id\":\"DHTClientOps-percentiles:-join\",\"panelIndex\":13,\"row\":10,\"size_x\":3,\"size_y\":3,\"type\":\"visualization\"},{\"col\":10,\"id\":\"DHTClientOps-percentiles:-join-ret\",\"panelIndex\":14,\"row\":10,\"size_x\":3,\"size_y\":3,\"type\":\"visualization\"},{\"id\":\"DHTClientOps-percentiles:-nack\",\"type\":\"visualization\",\"panelIndex\":15,\"size_x\":3,\"size_y\":3,\"col\":1,\"row\":13},{\"id\":\"DHTClientOps-percentiles:-timeout\",\"type\":\"visualization\",\"panelIndex\":16,\"size_x\":3,\"size_y\":3,\"col\":4,\"row\":13},{\"id\":\"DHTClientOps-percentiles:-rexmit\",\"type\":\"visualization\",\"panelIndex\":17,\"size_x\":3,\"size_y\":3,\"col\":7,\"row\":13},{\"id\":\"DHTClientOps-percentiles:-unclassified\",\"type\":\"visualization\",\"panelIndex\":18,\"size_x\":3,\"size_y\":3,\"col\":10,\"row\":13}]",
+      "optionsJSON": "{\"darkTheme\":false}",
+      "uiStateJSON": "{\"P-7\":{\"vis\":{\"legendOpen\":true}}}",
+      "version": 1,
+      "timeRestore": false,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"filter\":[{\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"*\"}}}]}"
+      }
+    }
+  },
+  {
     "_id": "CPU-stats-on-all-hosts",
     "_type": "visualization",
     "_source": {
@@ -414,6 +431,258 @@
       "version": 1,
       "kibanaSavedObjectMeta": {
         "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"query\":\"*\",\"analyze_wildcard\":true}},\"filter\":[{\"$state\":{\"store\":\"appState\"},\"meta\":{\"alias\":null,\"disabled\":false,\"index\":\"analyst\",\"key\":\"type\",\"negate\":false,\"value\":\"summary\"},\"query\":{\"match\":{\"type\":{\"query\":\"summary\",\"type\":\"phrase\"}}}}]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-write-set",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: write set",
+      "visState": "{\"title\":\"DHTClientOps percentiles: write\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.write_set_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-write",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: write",
+      "visState": "{\"title\":\"DHTClientOps percentiles: read set\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.write_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-sub",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: sub",
+      "visState": "{\"title\":\"DHTClientOps percentiles: write set\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.sub_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-read-set",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: read set",
+      "visState": "{\"title\":\"DHTClientOps percentiles: read\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.read_set_rate\",\"percents\":[1,5,25,50,75,95,99]}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-read",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: read",
+      "visState": "{\"title\":\"New Visualization\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.read_rate\",\"percents\":[1,5,25,50,75,95,99]}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-ku-unsolicited-leaf",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: ku unsolicited leaf",
+      "visState": "{\"title\":\"DHTClientOps percentiles: ku solicited set\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.ku_unsol_leaf_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-ku-unsolicited-set",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: ku unsolicited set",
+      "visState": "{\"title\":\"DHTClientOps percentiles: ku unsolicited leaf\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.ku_unsol_set_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-ku-solicited-set",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: ku solicited set",
+      "visState": "{\"title\":\"DHTClientOps percentiles: ku solicited leaf\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.ku_sol_set_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-ku-solicited-leaf",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: ku solicited leaf",
+      "visState": "{\"title\":\"DHTClientOps percentiles: unsub\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.ku_sol_leaf_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-ping",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: ping",
+      "visState": "{\"title\":\"DHTClientOps percentiles: ku unsolicited set\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.ping_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-join",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: join",
+      "visState": "{\"title\":\"DHTClientOps percentiles: pong\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.join_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-unsub",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: unsub",
+      "visState": "{\"title\":\"DHTClientOps percentiles: sub\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.unsub_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-pong",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: pong",
+      "visState": "{\"title\":\"DHTClientOps percentiles: ping\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.pong_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-join-ret",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: join ret",
+      "visState": "{\"title\":\"DHTClientOps percentiles: join\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.join_ret_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-nack",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: nack",
+      "visState": "{\"title\":\"DHTClientOps percentiles: join ret\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.nack_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-timeout",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: timeout",
+      "visState": "{\"title\":\"DHTClientOps percentiles: nack\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.tout_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-rexmit",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: rexmit",
+      "visState": "{\"title\":\"DHTClientOps percentiles: timeout\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.rexmit_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
+      }
+    }
+  },
+  {
+    "_id": "DHTClientOps-percentiles:-unclassified",
+    "_type": "visualization",
+    "_source": {
+      "title": "DHTClientOps percentiles: unclassified",
+      "visState": "{\"title\":\"DHTClientOps percentiles: rexmit\",\"type\":\"line\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"showCircles\":true,\"smoothLines\":false,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"DHTCliOps.other_rate\",\"percents\":[1,5,25,50,75,95,99],\"customLabel\":\"\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"time\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"analyst\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"type:summary\"}},\"filter\":[]}"
       }
     }
   }
