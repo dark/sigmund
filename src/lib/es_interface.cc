@@ -131,7 +131,23 @@ void ElasticSearchInterface::setup_es_documents() {
   curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, curl_null_cb);
 
   // magic JSON, update accordingly
-  const std::string postdata = "{\"mappings\":{\"summary-report\":{\"properties\":{\"time\":{\"type\":\"date\",\"format\":\"epoch_millis\"},\"hostname\":{\"type\":\"string\",\"index\":\"not_analyzed\"},\"basename\":{\"type\":\"string\",\"index\":\"not_analyzed\"},\"procname\":{\"type\":\"string\",\"index\":\"not_analyzed\"},\"pgname\":{\"type\":\"string\",\"index\":\"not_analyzed\"},\"module\":{\"type\":\"string\",\"index\":\"not_analyzed\"},\"type\":{\"type\":\"string\",\"index\":\"not_analyzed\"}}},\"detailed-report\":{\"properties\":{\"time\":{\"type\":\"date\",\"format\":\"epoch_millis\"},\"hostname\":{\"type\":\"string\",\"index\":\"not_analyzed\"},\"basename\":{\"type\":\"string\",\"index\":\"not_analyzed\"},\"procname\":{\"type\":\"string\",\"index\":\"not_analyzed\"},\"pgname\":{\"type\":\"string\",\"index\":\"not_analyzed\"},\"module\":{\"type\":\"string\",\"index\":\"not_analyzed\"},\"type\":{\"type\":\"string\",\"index\":\"not_analyzed\"}}}}}";
+  const std::string postdata = "{\"mappings\":{\"summary-report\":{\"properties\":{"
+      "\"time\":{\"type\":\"date\",\"format\":\"epoch_millis\"},"
+      "\"hostname\":{\"type\":\"string\",\"index\":\"not_analyzed\"},"
+      "\"basename\":{\"type\":\"string\",\"index\":\"not_analyzed\"},"
+      "\"procname\":{\"type\":\"string\",\"index\":\"not_analyzed\"},"
+      "\"pgname\":{\"type\":\"string\",\"index\":\"not_analyzed\"},"
+      "\"module\":{\"type\":\"string\",\"index\":\"not_analyzed\"},"
+      "\"type\":{\"type\":\"string\",\"index\":\"not_analyzed\"}"
+      "}},\"detailed-report\":{\"properties\":{"
+      "\"time\":{\"type\":\"date\",\"format\":\"epoch_millis\"},"
+      "\"hostname\":{\"type\":\"string\",\"index\":\"not_analyzed\"},"
+      "\"basename\":{\"type\":\"string\",\"index\":\"not_analyzed\"},"
+      "\"procname\":{\"type\":\"string\",\"index\":\"not_analyzed\"},"
+      "\"pgname\":{\"type\":\"string\",\"index\":\"not_analyzed\"},"
+      "\"module\":{\"type\":\"string\",\"index\":\"not_analyzed\"},"
+      "\"type\":{\"type\":\"string\",\"index\":\"not_analyzed\"}"
+      "}}}}";
   curl_easy_setopt(handle, CURLOPT_POSTFIELDS, postdata.c_str());
   curl_easy_setopt(handle, CURLOPT_POSTFIELDSIZE, postdata.size());
 
