@@ -200,8 +200,8 @@ std::string ElasticSearchInterface::pb2json(const freudpb::Report &pb) {
     result += "], ";
   }
 
-  // if not a summary, append generic info; these info will go into
-  // the module section in that case
+  // if not a summary, append generic info here; if this a summary,
+  // these info will go inside the module section instead
   if (pb.type() == freudpb::Report::DETAILED) {
     result += "\"generic_info\": {";
     append_kv_list(&result, pb.generic_info());
@@ -213,12 +213,18 @@ std::string ElasticSearchInterface::pb2json(const freudpb::Report &pb) {
   append_kv_list(&result, pb.module_info());
   // if this a summary, append some metafields
   if (pb.type() == freudpb::Report::SUMMARY) {
+    // need this separator only if actual module info were outputted already
+    if (pb.module_info_size())
+      result += ", ";
+
     // number of instances
-    result += ", ";
     append_kv_uint64(&result, "__instances", pb.instance_id());
-    // all data from the generic_info
-    result += ", ";
-    append_kv_list(&result, pb.generic_info(), "__");
+
+    // all data from the generic_info, if any, prefixed with two underscores
+    if (pb.generic_info_size()) {
+      result += ", ";
+      append_kv_list(&result, pb.generic_info(), "__");
+    }
   }
   result += "} ";
 
