@@ -49,6 +49,7 @@ class ElasticSearchInterface {
   CURL *summary_report_handle_;
   char summary_report_post_errbuf_[CURL_ERROR_SIZE];
 
+  const bool send_detailed_reports_;
   std::string detailed_report_post_url_;
   CURL *detailed_report_handle_;
   char detailed_report_post_errbuf_[CURL_ERROR_SIZE];

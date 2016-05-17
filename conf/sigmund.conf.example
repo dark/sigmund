@@ -33,3 +33,6 @@
 
 ## Whether packet contents should be sent to ElasticSearch or not.
 #send_to_es=true
+
+## Whether to send detailed reports to ElasticSearch
+#forward_detailed_reports=false

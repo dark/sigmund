@@ -32,6 +32,7 @@ Configurator::Configurator() {
 
   cache_packets_in_db_ = false;
   send_packets_to_es_ = true;
+  forward_detailed_reports_ = false;
 }
 
 Configurator::Configurator(const int argc, const char *argv[])
@@ -76,6 +77,10 @@ bool Configurator::get_cache_packets_in_db() const {
 
 bool Configurator::get_send_packets_to_es() const {
   return send_packets_to_es_;
+}
+
+bool Configurator::fwd_detailed_reports() const {
+  return forward_detailed_reports_;
 }
 
 void Configurator::read_config_from_file(FILE *fp) {
@@ -124,6 +129,11 @@ void Configurator::read_config_from_file(FILE *fp) {
         fprintf(stderr, "WARNING: failed to parse config line '%s'\n", buf);
       else
         fprintf(stderr, "NOTICE:%s sending packets to ES\n", send_packets_to_es_ ? "" : " NOT");
+    } else if (strncmp(buf, "forward_detailed_reports=", strlen("forward_detailed_reports=")) == 0) {
+      if (!parse_bool(buf + strlen("forward_detailed_reports="), &forward_detailed_reports_))
+        fprintf(stderr, "WARNING: failed to parse config line '%s'\n", buf);
+      else
+        fprintf(stderr, "NOTICE:%s forwarding detailed reports to ES\n", forward_detailed_reports_ ? "" : " NOT");
     }
 
   } // while (true)

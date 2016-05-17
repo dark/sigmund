@@ -38,6 +38,7 @@ class Configurator {
   const std::string& get_elastic_search_index() const;
   bool get_cache_packets_in_db() const;
   bool get_send_packets_to_es() const;
+  bool fwd_detailed_reports() const;
 
  private:
   std::string database_directory_;
@@ -47,6 +48,7 @@ class Configurator {
 
   bool cache_packets_in_db_;
   bool send_packets_to_es_;
+  bool forward_detailed_reports_;
 
   void read_config_from_file(FILE *fp);
   static bool parse_string(const char *buf, std::string *output);

@@ -26,7 +26,8 @@ namespace lib {
 
 ElasticSearchInterface::ElasticSearchInterface(const Configurator &config)
     : base_address_(config.get_elastic_search_url()), index_name_(config.get_elastic_search_index()),
-      summary_report_handle_(NULL), detailed_report_handle_(NULL) {
+      summary_report_handle_(NULL),
+      send_detailed_reports_(config.fwd_detailed_reports()),  detailed_report_handle_(NULL) {
   summary_report_post_url_ = base_address_ + index_name_ + "/summary-report/";
   detailed_report_post_url_ = base_address_ + index_name_ + "/detailed-report/";
 
@@ -78,6 +79,10 @@ bool ElasticSearchInterface::post_packet(const std::string &s) {
     fprintf(stderr, "ERROR: parse pb message failed\n");
     return false;
   }
+
+  if (pkt_post_pb_.type() == freudpb::Report::DETAILED && !send_detailed_reports_)
+    // nothing to do here, we don't want to send this detailed report
+    return true;
 
   std::string postdata = pb2json(pkt_post_pb_);
 
