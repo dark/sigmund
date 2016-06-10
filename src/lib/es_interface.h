@@ -27,6 +27,48 @@
 namespace freud {
 namespace lib {
 
+class ElasticSearchIndexManager {
+ public:
+  explicit ElasticSearchIndexManager(const std::string &base_address);
+  ~ElasticSearchIndexManager() = default;
+
+  bool init_index(const std::string &index_name, const std::string &mappings);
+  bool send(const std::string &index_name, const std::string &document_name,
+            const std::string &postdata);
+
+ private:
+  class DocInfo {
+   public:
+    DocInfo(const std::string &name, const std::string &full_url);
+    ~DocInfo() = default;
+
+    bool send(const std::string &postdata);
+
+   private:
+    const std::string document_name_;
+    const std::string document_post_url_;
+    CURL *handle_;
+    char errbuf_[CURL_ERROR_SIZE];
+  };
+
+  class IndexInfo {
+   public:
+    IndexInfo(const std::string &name, const std::string &index_url, const std::string &mappings);
+    ~IndexInfo() = default;
+
+    bool send(const std::string &document_name, const std::string &postdata);
+
+   private:
+    const std::string index_name_;
+    const std::string index_post_url_;
+    const std::string mappings_;
+    std::map<std::string, DocInfo> documents_;
+  };
+
+  const std::string base_address_;
+  std::map<std::string, IndexInfo> indices_;
+};
+
 class ElasticSearchInterface {
  public:
   explicit ElasticSearchInterface(const Configurator &config);
@@ -44,15 +86,8 @@ class ElasticSearchInterface {
   freudpb::Report pkt_post_pb_;
 
   std::string hostname_;
-
-  std::string summary_report_post_url_;
-  CURL *summary_report_handle_;
-  char summary_report_post_errbuf_[CURL_ERROR_SIZE];
-
+  ElasticSearchIndexManager index_manager_;
   const bool send_detailed_reports_;
-  std::string detailed_report_post_url_;
-  CURL *detailed_report_handle_;
-  char detailed_report_post_errbuf_[CURL_ERROR_SIZE];
 
   void setup_es_documents();
 

@@ -24,13 +24,111 @@
 namespace freud {
 namespace lib {
 
+ElasticSearchIndexManager::ElasticSearchIndexManager(const std::string &base_address)
+    : base_address_(base_address) {
+}
+
+bool ElasticSearchIndexManager::init_index(const std::string &index_name, const std::string &mappings) {
+  auto index_ptr = indices_.find(index_name);
+  if (index_ptr != indices_.end()) {
+    // index already present
+    fprintf(stderr, "ERROR: index named [%s] exists already\n", index_name.c_str());
+    return false;
+  }
+
+  indices_.insert(std::pair<std::string, IndexInfo>(index_name,
+                                                    IndexInfo(index_name,
+                                                              base_address_ + index_name + "/",
+                                                              mappings)));
+  fprintf(stderr, "INFO: created new index named [%s]\n", index_name.c_str());
+
+  return true;
+}
+
+bool ElasticSearchIndexManager::send(const std::string &index_name, const std::string &document_name,
+                                     const std::string &postdata) {
+  auto index_ptr = indices_.find(index_name);
+  if (index_ptr == indices_.end()) {
+    // index not found
+    fprintf(stderr, "ERROR: index named [%s] not found while sending\n", index_name.c_str());
+    return false;
+  }
+
+  return index_ptr->second.send(document_name, postdata);
+}
+
+ElasticSearchIndexManager::IndexInfo::IndexInfo(const std::string &name, const std::string &index_url,
+                                                const std::string &mappings)
+    : index_name_(name), index_post_url_(index_url), mappings_(mappings) {
+  char tmp_errbuf[CURL_ERROR_SIZE];
+  CURL *tmp_handle = curl_easy_init();
+  curl_easy_setopt(tmp_handle, CURLOPT_URL, index_post_url_.c_str());
+  curl_easy_setopt(tmp_handle, CURLOPT_POST, 1);
+  curl_easy_setopt(tmp_handle, CURLOPT_ERRORBUFFER, tmp_errbuf);
+  curl_easy_setopt(tmp_handle, CURLOPT_WRITEFUNCTION, ElasticSearchInterface::curl_null_cb);
+  curl_easy_setopt(tmp_handle, CURLOPT_POSTFIELDS, mappings.c_str());
+  curl_easy_setopt(tmp_handle, CURLOPT_POSTFIELDSIZE, mappings.size());
+
+  CURLcode res = curl_easy_perform(tmp_handle);
+  if (res != CURLE_OK)
+    fprintf(stderr, "WARNING: ES mappng init failed for index %s: %d(%s), %s\n",
+            index_name_.c_str(),
+            res, curl_easy_strerror(res),
+            // errbuf might not have been populated
+            tmp_errbuf[0] ? tmp_errbuf : "");
+
+  curl_easy_cleanup(tmp_handle);
+}
+
+bool ElasticSearchIndexManager::IndexInfo::send(const std::string &document_name, const std::string &postdata) {
+  // create document if not already existing
+  auto doc_ptr = documents_.find(document_name);
+  if (doc_ptr == documents_.end()) {
+    // index not found
+    auto retval = documents_.insert(std::pair<std::string, DocInfo>(document_name,
+                                                                    DocInfo(document_name,
+                                                                            index_post_url_ + document_name + "/")));
+    doc_ptr = retval.first;
+
+    fprintf(stderr, "INFO: created new document [%s] under index [%s]\n",
+            document_name.c_str(), index_name_.c_str());
+  }
+
+  return doc_ptr->second.send(postdata);
+}
+
+ElasticSearchIndexManager::DocInfo::DocInfo(const std::string &name, const std::string &full_url)
+    : document_name_(name), document_post_url_(full_url) {
+  handle_ = curl_easy_init();
+  curl_easy_setopt(handle_, CURLOPT_URL, document_post_url_.c_str());
+  curl_easy_setopt(handle_, CURLOPT_POST, 1);
+  curl_easy_setopt(handle_, CURLOPT_ERRORBUFFER, errbuf_);
+  // suppress all data output with a null callback
+  curl_easy_setopt(handle_, CURLOPT_WRITEFUNCTION, ElasticSearchInterface::curl_null_cb);
+  // DEBUG ONLY
+  //curl_easy_setopt(handle_, CURLOPT_VERBOSE, 1);
+}
+
+bool ElasticSearchIndexManager::DocInfo::send(const std::string &postdata) {
+  curl_easy_setopt(handle_, CURLOPT_POSTFIELDS, postdata.c_str());
+  curl_easy_setopt(handle_, CURLOPT_POSTFIELDSIZE, postdata.size());
+  CURLcode res = curl_easy_perform(handle_);
+  if (res != CURLE_OK) {
+    fprintf(stderr, "ERROR: curl perform failed at URL[%s]: %d(%s), %s\n",
+            document_post_url_.c_str(),
+            res, curl_easy_strerror(res),
+            // errbuf might not have been populated
+            errbuf_[0] ? errbuf_ : "");
+    return false;
+  }
+
+  return true;
+}
+
 ElasticSearchInterface::ElasticSearchInterface(const Configurator &config)
     : base_address_(config.get_elastic_search_url()), index_name_(config.get_elastic_search_index()),
-      summary_report_handle_(NULL),
-      send_detailed_reports_(config.fwd_detailed_reports()),  detailed_report_handle_(NULL) {
-  summary_report_post_url_ = base_address_ + index_name_ + "/summary-report/";
-  detailed_report_post_url_ = base_address_ + index_name_ + "/detailed-report/";
-
+      index_manager_(base_address_),
+      send_detailed_reports_(config.fwd_detailed_reports()) {
   char buf[256];
   if (gethostname(buf, sizeof(buf)) < 0) {
     // error case
@@ -51,25 +149,6 @@ bool ElasticSearchInterface::init() {
   // setup the documents in ES if they do not exist; failures should be ignored
   setup_es_documents();
 
-  // init all handles
-  summary_report_handle_ = curl_easy_init();
-  curl_easy_setopt(summary_report_handle_, CURLOPT_URL, summary_report_post_url_.c_str());
-  curl_easy_setopt(summary_report_handle_, CURLOPT_POST, 1);
-  curl_easy_setopt(summary_report_handle_, CURLOPT_ERRORBUFFER, summary_report_post_errbuf_);
-  // suppress all data output with a null callback
-  curl_easy_setopt(summary_report_handle_, CURLOPT_WRITEFUNCTION, curl_null_cb);
-  // DEBUG ONLY
-  //curl_easy_setopt(summary_report_handle_, CURLOPT_VERBOSE, 1);
-
-  detailed_report_handle_ = curl_easy_init();
-  curl_easy_setopt(detailed_report_handle_, CURLOPT_URL, detailed_report_post_url_.c_str());
-  curl_easy_setopt(detailed_report_handle_, CURLOPT_POST, 1);
-  curl_easy_setopt(detailed_report_handle_, CURLOPT_ERRORBUFFER, detailed_report_post_errbuf_);
-  // suppress all data output with a null callback
-  curl_easy_setopt(detailed_report_handle_, CURLOPT_WRITEFUNCTION, curl_null_cb);
-  // DEBUG ONLY
-  //curl_easy_setopt(detailed_report_handle_, CURLOPT_VERBOSE, 1);
-
   return true;
 }
 
@@ -89,34 +168,10 @@ bool ElasticSearchInterface::post_packet(const std::string &s) {
   // select URL destination based on report type
   switch (pkt_post_pb_.type()) {
     case freudpb::Report::SUMMARY:
-      {
-        curl_easy_setopt(summary_report_handle_, CURLOPT_POSTFIELDS, postdata.c_str());
-        curl_easy_setopt(summary_report_handle_, CURLOPT_POSTFIELDSIZE, postdata.size());
-        CURLcode res = curl_easy_perform(summary_report_handle_);
-        if (res != CURLE_OK) {
-          fprintf(stderr, "ERROR: curl perform failed for summary report %d(%s): %s\n",
-                  res, curl_easy_strerror(res),
-                  // errbuf might not have been populated
-                  summary_report_post_errbuf_[0] ? summary_report_post_errbuf_ : "");
-          return false;
-        }
-      }
-      break;
+      return index_manager_.send(index_name_, "summary-report", postdata);
 
     case freudpb::Report::DETAILED:
-      {
-        curl_easy_setopt(detailed_report_handle_, CURLOPT_POSTFIELDS, postdata.c_str());
-        curl_easy_setopt(detailed_report_handle_, CURLOPT_POSTFIELDSIZE, postdata.size());
-        CURLcode res = curl_easy_perform(detailed_report_handle_);
-        if (res != CURLE_OK) {
-          fprintf(stderr, "ERROR: curl perform failed for detailed report %d(%s): %s\n",
-                  res, curl_easy_strerror(res),
-                  // errbuf might not have been populated
-                  detailed_report_post_errbuf_[0] ? detailed_report_post_errbuf_ : "");
-          return false;
-        }
-      }
-      break;
+      return index_manager_.send(index_name_, "detailed-report", postdata);
   }
 
   return true;
@@ -127,16 +182,8 @@ size_t ElasticSearchInterface::curl_null_cb(void * /*buffer*/, size_t size, size
 }
 
 void ElasticSearchInterface::setup_es_documents() {
-  std::string url = base_address_ + index_name_ + "/";
-
-  CURL *handle = curl_easy_init();
-  curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
-  curl_easy_setopt(handle, CURLOPT_POST, 1);
-  curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, detailed_report_post_errbuf_);
-  curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, curl_null_cb);
-
   // magic JSON, update accordingly
-  const std::string postdata = "{\"mappings\":{\"summary-report\":{\"properties\":{"
+  const std::string mappings = "{\"mappings\":{\"summary-report\":{\"properties\":{"
       "\"time\":{\"type\":\"date\",\"format\":\"epoch_millis\"},"
       "\"hostname\":{\"type\":\"string\",\"index\":\"not_analyzed\"},"
       "\"basename\":{\"type\":\"string\",\"index\":\"not_analyzed\"},"
@@ -153,17 +200,8 @@ void ElasticSearchInterface::setup_es_documents() {
       "\"module\":{\"type\":\"string\",\"index\":\"not_analyzed\"},"
       "\"type\":{\"type\":\"string\",\"index\":\"not_analyzed\"}"
       "}}}}";
-  curl_easy_setopt(handle, CURLOPT_POSTFIELDS, postdata.c_str());
-  curl_easy_setopt(handle, CURLOPT_POSTFIELDSIZE, postdata.size());
 
-  CURLcode res = curl_easy_perform(handle);
-  if (res != CURLE_OK)
-    fprintf(stderr, "WARNING: ES document init failed %d(%s): %s\n",
-            res, curl_easy_strerror(res),
-            // errbuf might not have been populated
-            detailed_report_post_errbuf_[0] ? detailed_report_post_errbuf_ : "");
-
-  curl_easy_cleanup(handle);
+  index_manager_.init_index(index_name_, mappings);
 }
 
 std::string ElasticSearchInterface::pb2json(const freudpb::Report &pb) {
