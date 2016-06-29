@@ -71,7 +71,7 @@ ElasticSearchIndexManager::IndexInfo::IndexInfo(const std::string &name, const s
 
   CURLcode res = curl_easy_perform(tmp_handle);
   if (res != CURLE_OK)
-    fprintf(stderr, "WARNING: ES mappng init failed for index %s: %d(%s), %s\n",
+    fprintf(stderr, "WARNING: ES mapping init failed for index %s: %d(%s), %s\n",
             index_name_.c_str(),
             res, curl_easy_strerror(res),
             // errbuf might not have been populated
