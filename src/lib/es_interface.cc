@@ -61,30 +61,49 @@ bool ElasticSearchIndexManager::send(const std::string &index_name, const std::s
 ElasticSearchIndexManager::IndexInfo::IndexInfo(const std::string &name, const std::string &base_post_url,
                                                 const std::string &mappings)
     : index_name_(name), base_post_url_(base_post_url), mappings_(mappings) {
-
-  // set the full POST url
-  current_post_url_ = base_post_url_ + index_name_ + "/";
-
-  // setup the mappings for the current index
-  setup_mappings();
+  // init timestamp of most recent event
+  ts_last_update_.year_ = 0;
+  ts_last_update_.month_ = 0;
+  ts_last_update_.day_ = 0;
 }
 
 bool ElasticSearchIndexManager::IndexInfo::send(const std::string &document_name, const std::string &postdata,
                                                 const tm &event_ts) {
+  const bool flush_needed = update_cached_ts(event_ts);
+  if (flush_needed) {
+    fprintf(stderr, "INFO: flushing all documents under index [%s]\n", index_name_.c_str());
+    for (auto &iter: documents_)
+      delete iter.second;
+    documents_.clear();
+
+    // determine the new date suffix
+    char index_suffix_buf[128];
+    snprintf(index_suffix_buf, sizeof(index_suffix_buf), "-%.4d.%.2d.%.2d",
+             ts_last_update_.year_, ts_last_update_.month_, ts_last_update_.day_);
+
+    // set the new POST url
+    current_post_url_ = base_post_url_ + index_name_ + std::string(index_suffix_buf) + "/";
+    fprintf(stderr, "INFO: index [%s] updated URL to [%s]\n", index_name_.c_str(),
+            current_post_url_.c_str());
+
+    // setup the mappings for the new index name
+    setup_mappings();
+  }
+
   // create document if not already existing
   auto doc_ptr = documents_.find(document_name);
   if (doc_ptr == documents_.end()) {
     // index not found
-    auto retval = documents_.insert(std::pair<std::string, DocInfo>(document_name,
-                                                                    DocInfo(document_name,
-                                                                            current_post_url_ + document_name + "/")));
+    auto retval = documents_.insert(std::pair<std::string, DocInfo*>(document_name,
+                                                                     new DocInfo(document_name,
+                                                                                 current_post_url_ + document_name + "/")));
     doc_ptr = retval.first;
 
-    fprintf(stderr, "INFO: created new document [%s] under index [%s]\n",
-            document_name.c_str(), index_name_.c_str());
+    fprintf(stderr, "INFO: index [%s] spawned new document [%s] under URL [%s]\n",
+            index_name_.c_str(), document_name.c_str(), current_post_url_.c_str());
   }
 
-  return doc_ptr->second.send(postdata);
+  return doc_ptr->second->send(postdata);
 }
 
 void ElasticSearchIndexManager::IndexInfo::setup_mappings() {
@@ -108,6 +127,26 @@ void ElasticSearchIndexManager::IndexInfo::setup_mappings() {
   curl_easy_cleanup(tmp_handle);
 }
 
+bool ElasticSearchIndexManager::IndexInfo::update_cached_ts(const tm &event_ts) {
+  const int event_year = 1900 + event_ts.tm_year;
+  const int event_month = 1 + event_ts.tm_mon;
+  const int event_day = event_ts.tm_mday;
+
+  if (event_year > ts_last_update_.year_ ||
+      (event_year == ts_last_update_.year_ && event_month > ts_last_update_.month_) ||
+      (event_year == ts_last_update_.year_ && event_month == ts_last_update_.month_ && event_day > ts_last_update_.day_)) {
+    // update needed
+    ts_last_update_.year_ = event_year;
+    ts_last_update_.month_ = event_month;
+    ts_last_update_.day_ = event_day;
+
+    return true;
+  }
+
+  // no update happened
+  return false;
+}
+
 ElasticSearchIndexManager::DocInfo::DocInfo(const std::string &name, const std::string &full_url)
     : document_name_(name), document_post_url_(full_url) {
   handle_ = curl_easy_init();
@@ -118,6 +157,12 @@ ElasticSearchIndexManager::DocInfo::DocInfo(const std::string &name, const std::
   curl_easy_setopt(handle_, CURLOPT_WRITEFUNCTION, ElasticSearchInterface::curl_null_cb);
   // DEBUG ONLY
   //curl_easy_setopt(handle_, CURLOPT_VERBOSE, 1);
+}
+
+ElasticSearchIndexManager::DocInfo::~DocInfo() {
+  curl_easy_cleanup(handle_);
+  fprintf(stderr, "INFO: destroyed document [%s] at URL [%s]\n",
+          document_name_.c_str(), document_post_url_.c_str());
 }
 
 bool ElasticSearchIndexManager::DocInfo::send(const std::string &postdata) {

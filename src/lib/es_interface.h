@@ -40,7 +40,7 @@ class ElasticSearchIndexManager {
   class DocInfo {
    public:
     DocInfo(const std::string &name, const std::string &full_url);
-    ~DocInfo() = default;
+    ~DocInfo();
 
     bool send(const std::string &postdata);
 
@@ -64,9 +64,19 @@ class ElasticSearchIndexManager {
     const std::string mappings_;
 
     std::string current_post_url_; // this URL also includes the current index name
-    std::map<std::string, DocInfo> documents_;
+    std::map<std::string, DocInfo*> documents_;
+
+    // ts data about the event stored with the most recent timestamp
+    struct {
+      int year_;
+      int month_;
+      int day_;
+    } ts_last_update_;
 
     void setup_mappings();
+    // update the timestamp of the most recent timestamp; returns true
+    // if there was an actual forward update
+    bool update_cached_ts(const tm &event_ts);
   };
 
   const std::string base_address_;
