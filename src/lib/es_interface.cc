@@ -19,6 +19,7 @@
 #include "lib/es_interface.h"
 
 #include <string.h> // for basename
+#include <time.h> // for gmtime_r
 #include <unistd.h> // for gethostname
 
 namespace freud {
@@ -46,7 +47,7 @@ bool ElasticSearchIndexManager::init_index(const std::string &index_name, const 
 }
 
 bool ElasticSearchIndexManager::send(const std::string &index_name, const std::string &document_name,
-                                     const std::string &postdata) {
+                                     const std::string &postdata, const tm &event_ts) {
   auto index_ptr = indices_.find(index_name);
   if (index_ptr == indices_.end()) {
     // index not found
@@ -54,7 +55,7 @@ bool ElasticSearchIndexManager::send(const std::string &index_name, const std::s
     return false;
   }
 
-  return index_ptr->second.send(document_name, postdata);
+  return index_ptr->second.send(document_name, postdata, event_ts);
 }
 
 ElasticSearchIndexManager::IndexInfo::IndexInfo(const std::string &name, const std::string &base_post_url,
@@ -68,7 +69,8 @@ ElasticSearchIndexManager::IndexInfo::IndexInfo(const std::string &name, const s
   setup_mappings();
 }
 
-bool ElasticSearchIndexManager::IndexInfo::send(const std::string &document_name, const std::string &postdata) {
+bool ElasticSearchIndexManager::IndexInfo::send(const std::string &document_name, const std::string &postdata,
+                                                const tm &event_ts) {
   // create document if not already existing
   auto doc_ptr = documents_.find(document_name);
   if (doc_ptr == documents_.end()) {
@@ -172,15 +174,22 @@ bool ElasticSearchInterface::post_packet(const std::string &s) {
     // nothing to do here, we don't want to send this detailed report
     return true;
 
+  const time_t timestamp = pkt_post_pb_.usec_ts() / 1000000; // seconds since Epoch (UTC)
+  struct tm broken_down_time;
+  if (!gmtime_r(&timestamp, &broken_down_time)) {
+    fprintf(stderr, "ERROR: gmtime_r failed\n");
+    return false;
+  }
+
   std::string postdata = pb2json(pkt_post_pb_);
 
   // select URL destination based on report type
   switch (pkt_post_pb_.type()) {
     case freudpb::Report::SUMMARY:
-      return index_manager_.send(index_name_, "summary-report", postdata);
+      return index_manager_.send(index_name_, "summary-report", postdata, broken_down_time);
 
     case freudpb::Report::DETAILED:
-      return index_manager_.send(index_name_, "detailed-report", postdata);
+      return index_manager_.send(index_name_, "detailed-report", postdata, broken_down_time);
   }
 
   return true;

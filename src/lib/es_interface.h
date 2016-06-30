@@ -34,7 +34,7 @@ class ElasticSearchIndexManager {
 
   bool init_index(const std::string &index_name, const std::string &mappings);
   bool send(const std::string &index_name, const std::string &document_name,
-            const std::string &postdata);
+            const std::string &postdata, const tm &event_ts);
 
  private:
   class DocInfo {
@@ -56,7 +56,7 @@ class ElasticSearchIndexManager {
     IndexInfo(const std::string &name, const std::string &base_post_url, const std::string &mappings);
     ~IndexInfo() = default;
 
-    bool send(const std::string &document_name, const std::string &postdata);
+    bool send(const std::string &document_name, const std::string &postdata, const tm &event_ts);
 
    private:
     const std::string index_name_;
