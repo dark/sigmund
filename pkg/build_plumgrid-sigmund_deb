@@ -30,6 +30,9 @@ cp ${WDIR}/../conf/sigmund.conf.example ${BDIR_BASE}/etc/sigmund/sigmund.conf.ex
 mkdir -p ${BDIR_BASE}/etc/init/
 cp ${WDIR}/../init/plumgrid-sigmund.conf ${BDIR_BASE}/etc/init/plumgrid-sigmund.conf
 cp ${WDIR}/../init/plumgrid-sigmund.override ${BDIR_BASE}/etc/init/plumgrid-sigmund.override
+# documentation/example files
+mkdir -p ${BDIR_BASE}/usr/share/doc/sigmund-${PG_DEBVERSION}/kibana-dashboards/
+cp ${WDIR}/../misc/kibana-dashboards/export.json ${BDIR_BASE}/usr/share/doc/sigmund-${PG_DEBVERSION}/kibana-dashboards/export.json
 #####################################
 
 PKG_DEPS="libsqlite3-0, libcurl3, libprotobuf7"
