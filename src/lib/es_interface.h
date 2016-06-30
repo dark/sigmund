@@ -53,15 +53,17 @@ class ElasticSearchIndexManager {
 
   class IndexInfo {
    public:
-    IndexInfo(const std::string &name, const std::string &index_url, const std::string &mappings);
+    IndexInfo(const std::string &name, const std::string &base_post_url, const std::string &mappings);
     ~IndexInfo() = default;
 
     bool send(const std::string &document_name, const std::string &postdata);
 
    private:
     const std::string index_name_;
-    const std::string index_post_url_;
+    const std::string base_post_url_; // this URL does not include the current index name
     const std::string mappings_;
+
+    std::string current_post_url_; // this URL also includes the current index name
     std::map<std::string, DocInfo> documents_;
   };
 

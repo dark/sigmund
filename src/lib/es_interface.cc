@@ -38,7 +38,7 @@ bool ElasticSearchIndexManager::init_index(const std::string &index_name, const 
 
   indices_.insert(std::pair<std::string, IndexInfo>(index_name,
                                                     IndexInfo(index_name,
-                                                              base_address_ + index_name + "/",
+                                                              base_address_,
                                                               mappings)));
   fprintf(stderr, "INFO: created new index named [%s]\n", index_name.c_str());
 
@@ -57,12 +57,16 @@ bool ElasticSearchIndexManager::send(const std::string &index_name, const std::s
   return index_ptr->second.send(document_name, postdata);
 }
 
-ElasticSearchIndexManager::IndexInfo::IndexInfo(const std::string &name, const std::string &index_url,
+ElasticSearchIndexManager::IndexInfo::IndexInfo(const std::string &name, const std::string &base_post_url,
                                                 const std::string &mappings)
-    : index_name_(name), index_post_url_(index_url), mappings_(mappings) {
+    : index_name_(name), base_post_url_(base_post_url), mappings_(mappings) {
+
+  // set the full POST url
+  current_post_url_ = base_post_url_ + index_name_ + "/";
+
   char tmp_errbuf[CURL_ERROR_SIZE];
   CURL *tmp_handle = curl_easy_init();
-  curl_easy_setopt(tmp_handle, CURLOPT_URL, index_post_url_.c_str());
+  curl_easy_setopt(tmp_handle, CURLOPT_URL, current_post_url_.c_str());
   curl_easy_setopt(tmp_handle, CURLOPT_POST, 1);
   curl_easy_setopt(tmp_handle, CURLOPT_ERRORBUFFER, tmp_errbuf);
   curl_easy_setopt(tmp_handle, CURLOPT_WRITEFUNCTION, ElasticSearchInterface::curl_null_cb);
@@ -87,7 +91,7 @@ bool ElasticSearchIndexManager::IndexInfo::send(const std::string &document_name
     // index not found
     auto retval = documents_.insert(std::pair<std::string, DocInfo>(document_name,
                                                                     DocInfo(document_name,
-                                                                            index_post_url_ + document_name + "/")));
+                                                                            current_post_url_ + document_name + "/")));
     doc_ptr = retval.first;
 
     fprintf(stderr, "INFO: created new document [%s] under index [%s]\n",
