@@ -65,6 +65,8 @@ class ElasticSearchIndexManager {
 
     std::string current_post_url_; // this URL also includes the current index name
     std::map<std::string, DocInfo> documents_;
+
+    void setup_mappings();
   };
 
   const std::string base_address_;

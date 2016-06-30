@@ -64,24 +64,8 @@ ElasticSearchIndexManager::IndexInfo::IndexInfo(const std::string &name, const s
   // set the full POST url
   current_post_url_ = base_post_url_ + index_name_ + "/";
 
-  char tmp_errbuf[CURL_ERROR_SIZE];
-  CURL *tmp_handle = curl_easy_init();
-  curl_easy_setopt(tmp_handle, CURLOPT_URL, current_post_url_.c_str());
-  curl_easy_setopt(tmp_handle, CURLOPT_POST, 1);
-  curl_easy_setopt(tmp_handle, CURLOPT_ERRORBUFFER, tmp_errbuf);
-  curl_easy_setopt(tmp_handle, CURLOPT_WRITEFUNCTION, ElasticSearchInterface::curl_null_cb);
-  curl_easy_setopt(tmp_handle, CURLOPT_POSTFIELDS, mappings.c_str());
-  curl_easy_setopt(tmp_handle, CURLOPT_POSTFIELDSIZE, mappings.size());
-
-  CURLcode res = curl_easy_perform(tmp_handle);
-  if (res != CURLE_OK)
-    fprintf(stderr, "WARNING: ES mapping init failed for index %s: %d(%s), %s\n",
-            index_name_.c_str(),
-            res, curl_easy_strerror(res),
-            // errbuf might not have been populated
-            tmp_errbuf[0] ? tmp_errbuf : "");
-
-  curl_easy_cleanup(tmp_handle);
+  // setup the mappings for the current index
+  setup_mappings();
 }
 
 bool ElasticSearchIndexManager::IndexInfo::send(const std::string &document_name, const std::string &postdata) {
@@ -99,6 +83,27 @@ bool ElasticSearchIndexManager::IndexInfo::send(const std::string &document_name
   }
 
   return doc_ptr->second.send(postdata);
+}
+
+void ElasticSearchIndexManager::IndexInfo::setup_mappings() {
+  char tmp_errbuf[CURL_ERROR_SIZE];
+  CURL *tmp_handle = curl_easy_init();
+  curl_easy_setopt(tmp_handle, CURLOPT_URL, current_post_url_.c_str());
+  curl_easy_setopt(tmp_handle, CURLOPT_POST, 1);
+  curl_easy_setopt(tmp_handle, CURLOPT_ERRORBUFFER, tmp_errbuf);
+  curl_easy_setopt(tmp_handle, CURLOPT_WRITEFUNCTION, ElasticSearchInterface::curl_null_cb);
+  curl_easy_setopt(tmp_handle, CURLOPT_POSTFIELDS, mappings_.c_str());
+  curl_easy_setopt(tmp_handle, CURLOPT_POSTFIELDSIZE, mappings_.size());
+
+  CURLcode res = curl_easy_perform(tmp_handle);
+  if (res != CURLE_OK)
+    fprintf(stderr, "WARNING: ES mapping init failed for index %s: %d(%s), %s\n",
+            index_name_.c_str(),
+            res, curl_easy_strerror(res),
+            // errbuf might not have been populated
+            tmp_errbuf[0] ? tmp_errbuf : "");
+
+  curl_easy_cleanup(tmp_handle);
 }
 
 ElasticSearchIndexManager::DocInfo::DocInfo(const std::string &name, const std::string &full_url)
