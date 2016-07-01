@@ -23,7 +23,7 @@ rm -rf ${BDIR_BASE}
 mkdir -p ${BDIR_BASE}/usr/bin/
 cp ${WDIR}/src/sigmund ${BDIR_BASE}/usr/bin/sigmund
 strip ${BDIR_BASE}/usr/bin/sigmund
-cp ${WDIR}/src/sigmund-configure ${BDIR_BASE}/usr/bin/sigmund-configure
+cp ${WDIR}/../src/sigmund-configure ${BDIR_BASE}/usr/bin/sigmund-configure
 # configuration files
 mkdir -p ${BDIR_BASE}/etc/sigmund/
 cp ${WDIR}/../conf/sigmund.conf.example ${BDIR_BASE}/etc/sigmund/sigmund.conf.example
