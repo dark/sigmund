@@ -1,0 +1,221 @@
+#!/bin/bash
+
+function usage() {
+  progname=$(basename $0)
+  echo
+  echo "Usage: ${progname} [--ip ES_IP|--ipport ES_IP:PORT] [--start|--stop|--restart] [--autoboot|--no-autoboot]"
+  echo 'Configure the global Sigmund instance'
+  echo
+  echo 'Supported options: [options from the same block are mutually exclusive]'
+  echo '  --ip     - configure the IP address of the ElasticSearch instance to send data to (use default port 9200)'
+  echo '  --ipport - configure the IP address and the port of the ElasticSearch instance to send data to'
+  echo
+  echo '  --start   - start the Sigmund daemon'
+  echo '  --stop    - stop the Sigmund daemon'
+  echo '  --restart - restart the Sigmund daemon'
+  echo
+  echo '  --autoboot    - configure sigmund to start at boot'
+  echo '  --no-autoboot - configure sigmund NOT to start at boot'
+  echo
+}
+
+function check_unset_ip() {
+  if [[ -n "${ES_IP}" || -n "${ES_IPPORT}" ]]; then
+    echo 'Cannot specify --ip or --ipport more than once, exiting.'
+    usage
+    exit 1
+  fi
+}
+
+function check_unset_action() {
+  if [[ -n "${ACTION}" ]]; then
+    echo 'Cannot specify --start, --stop, or --restart more than once, exiting.'
+    usage
+    exit 1
+  fi
+}
+
+function check_unset_autoboot() {
+  if [[ -n "${AUTOBOOT}" ]]; then
+    echo 'Cannot specify --autoboot or --no-autoboot more than once, exiting.'
+    usage
+    exit 1
+  fi
+}
+
+function validate_ip() {
+  local IP_REGEX="(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
+
+  if [[ -n "${ES_IP}" ]]; then
+    if ! [[ "${ES_IP}" =~ ^$IP_REGEX$ ]]; then
+      echo "Value \"${ES_IP}\" is not valid for --ip. Exiting."
+      usage
+      exit 1
+    fi
+  elif [[ -n "${ES_IPPORT}" ]]; then
+    if ! [[ "${ES_IPPORT}" =~ ^$IP_REGEX:[0-9]{1,5}$ ]]; then
+      echo "Value \"${ES_IPPORT}\" is not valid for --ipport. Exiting."
+      usage
+      exit 1
+    fi
+  fi
+}
+
+function write_to_conf() {
+  local confline="es_url=http://${1}/"
+  local CONF_FILENAME='/etc/sigmund/sigmund.conf'
+
+  if [[ -f "${CONF_FILENAME}" ]]; then
+    echo "Updating configuration file to use destination \"${1}\" ..."
+    local status=0
+    if grep -q '^es_url=' "${CONF_FILENAME}"; then
+      # we need to update an existing line
+      sed -i "s;^es_url=.*;${confline};" "${CONF_FILENAME}"
+      local status=$?
+    else
+      # that conf line does not exist in the file, append to it
+      echo "${confline}" >> "${CONF_FILENAME}"
+      local status=$?
+    fi
+    if [[ $status -eq 0 ]]; then return; fi
+    echo "Failed to update configuration file, exit status: ${status}. Exiting."
+    exit 1
+  else
+    echo "Creating configuration file to use destination \"${1}\" ..."
+    echo "${confline}" > "${CONF_FILENAME}"
+    local status=$?
+    if [[ $status -eq 0 ]]; then return; fi
+    echo "Failed to create configuration file, exit status: ${status}. Exiting."
+    exit 1
+  fi
+}
+
+function do_action() {
+  echo "Executing action \"${1}\" ..."
+  service plumgrid-sigmund "${1}"
+  local status=$?
+  if [[ $status -eq 0 ]]; then return; fi
+  echo "Action failed with status: ${status}. Exiting."
+  exit 1
+}
+
+function set_autoboot() {
+  local OVERRIDE_FILENAME='/etc/init/plumgrid-sigmund.override'
+
+  if [[ "${1}" == 'yes' ]]; then
+    echo 'Setting up sigmund to autostart at boot ...'
+    # this will fail gracefully if the file is not there
+    rm -f "${OVERRIDE_FILENAME}"
+    local status=$?
+    if [[ $status -eq 0 ]]; then return; fi
+    echo "Failed to set sigmund to start at boot, exit status: ${status}. Exiting."
+    exit 1
+  elif [[ "${1}" == 'no' ]]; then
+    echo 'Setting up sigmund NOT to autostart at boot ...'
+    cat > "${OVERRIDE_FILENAME}" <<"HEREDOC__"
+# Override file for plumgrid-sigmund.
+#
+# Delete this file if you want to run the plumgrid-sigmund service at
+# startup.
+
+manual
+HEREDOC__
+    local status=$?
+    if [[ $status -eq 0 ]]; then return; fi
+    echo "Failed to stop sigmund from starting at boot, exit status: ${status}. Exiting."
+    exit 1
+  else
+    echo "Unexpected state in ${FUNCNAME}, 1[${1}]. Please report this as a bug."
+    exit 2
+  fi
+}
+
+ARGS=$(/usr/bin/getopt -o h --long help,ip:,ipport:,start,stop,restart,autoboot,no-autoboot -- "$@")
+if [[ $? != 0 ]] ; then
+  echo "Error in parsing arguments, exiting."
+  usage
+  exit 1
+fi
+
+ES_IP=
+ES_IPPORT=
+# one of: (unset)/start/stop/restart
+ACTION=
+# one of: (unset)/yes/no
+AUTOBOOT=
+
+eval set -- "$ARGS"
+
+while true
+do
+  case "$1" in
+    --ip)
+      check_unset_ip
+      ES_IP="${2}"
+      shift 2
+      ;;
+    --ipport)
+      check_unset_ip
+      ES_IPPORT="${2}"
+      shift 2
+      ;;
+
+    --start)
+      ;&
+    --stop)
+      ;&
+    --restart)
+      check_unset_action
+      ACTION="${1:2}"
+      shift 1
+      ;;
+
+    --autoboot)
+      check_unset_autoboot
+      AUTOBOOT="yes"
+      shift 1
+      ;;
+    --no-autoboot)
+      check_unset_autoboot
+      AUTOBOOT="no"
+      shift 1
+      ;;
+
+    -- ) shift; break ;;
+    -h | --help) usage; exit 0 ;;
+    * ) echo "Invalid argument \"${1}\", exiting."; usage; exit 1 ;;
+  esac
+done
+
+# validate and normalize arguments
+validate_ip
+if [[ -n "${ES_IP}" ]]; then
+  # carry ES_IP over to ES_IPPORT
+  ES_IPPORT="${ES_IP}:9200"
+fi
+
+# perform all actions
+something_was_done="no"
+if [[ -n "${ES_IPPORT}" ]]; then
+  # write to conf should come first, so a restart can use the new conf
+  # values
+  write_to_conf "${ES_IPPORT}"
+  something_was_done='yes'
+fi
+if [[ -n "${ACTION}" ]]; then
+  do_action "${ACTION}"
+  something_was_done='yes'
+fi
+if [[ -n "${AUTOBOOT}" ]]; then
+  set_autoboot "${AUTOBOOT}"
+  something_was_done='yes'
+fi
+
+if [[ "${something_was_done}" == 'no' ]]; then
+  # nothing was done, print the usage
+  usage
+  exit 0
+fi
+
+echo 'All done.'
+exit 0
