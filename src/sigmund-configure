@@ -194,6 +194,13 @@ if [[ -n "${ES_IP}" ]]; then
   ES_IPPORT="${ES_IP}:9200"
 fi
 
+# print a warning if you are not root
+if [[ "$(whoami)" != 'root' ]]; then
+  echo "WARNING: Current user is '$(whoami)', some actions might fail because of insufficient privileges."
+  echo "WARNING: You might need to re-run the script as root in case of failures."
+  echo
+fi
+
 # perform all actions
 something_was_done="no"
 if [[ -n "${ES_IPPORT}" ]]; then
@@ -213,6 +220,7 @@ fi
 
 if [[ "${something_was_done}" == 'no' ]]; then
   # nothing was done, print the usage
+  echo 'No action was performed.'
   usage
   exit 0
 fi
