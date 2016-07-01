@@ -1,9 +1,9 @@
 [
   {
-    "_id": "Overall-Dashboard",
+    "_id": "Overall-system-dashboard",
     "_type": "dashboard",
     "_source": {
-      "title": "Overall Dashboard",
+      "title": "Overall system dashboard",
       "hits": 0,
       "description": "",
       "panelsJSON": "[{\"col\":1,\"id\":\"Avg-load-overall\",\"panelIndex\":1,\"row\":1,\"size_x\":6,\"size_y\":3,\"type\":\"visualization\"},{\"col\":7,\"id\":\"CPU-stats-overall\",\"panelIndex\":2,\"row\":1,\"size_x\":6,\"size_y\":8,\"type\":\"visualization\"},{\"col\":1,\"id\":\"Memory-overall\",\"panelIndex\":3,\"row\":4,\"size_x\":6,\"size_y\":5,\"type\":\"visualization\"}]",
@@ -17,10 +17,10 @@
     }
   },
   {
-    "_id": "Base-dashboard",
+    "_id": "Base-system-dashboard",
     "_type": "dashboard",
     "_source": {
-      "title": "Base dashboard",
+      "title": "Base system dashboard",
       "hits": 0,
       "description": "",
       "panelsJSON": "[{\"col\":1,\"id\":\"CPU-usage-by-basename\",\"panelIndex\":1,\"row\":1,\"size_x\":5,\"size_y\":4,\"type\":\"visualization\"},{\"col\":1,\"id\":\"CPU-usage-for-top-pgnames\",\"panelIndex\":2,\"row\":9,\"size_x\":5,\"size_y\":4,\"type\":\"visualization\"},{\"col\":6,\"id\":\"FD-usage-for-top-pgnames\",\"panelIndex\":3,\"row\":1,\"size_x\":7,\"size_y\":5,\"type\":\"visualization\"},{\"col\":6,\"id\":\"Fiber-usage-for-top-pgnames\",\"panelIndex\":4,\"row\":6,\"size_x\":7,\"size_y\":6,\"type\":\"visualization\"},{\"col\":1,\"id\":\"RSS-by-basename\",\"panelIndex\":5,\"row\":5,\"size_x\":5,\"size_y\":4,\"type\":\"visualization\"},{\"col\":1,\"id\":\"RSS-by-pgname\",\"panelIndex\":6,\"row\":13,\"size_x\":5,\"size_y\":4,\"type\":\"visualization\"},{\"col\":6,\"id\":\"CPU-usage-(utime)-by-basename\",\"panelIndex\":7,\"row\":12,\"size_x\":7,\"size_y\":4,\"type\":\"visualization\"},{\"col\":6,\"id\":\"CPU-usage-(stime)-by-basename\",\"panelIndex\":8,\"row\":16,\"size_x\":7,\"size_y\":4,\"type\":\"visualization\"}]",
