@@ -23,6 +23,7 @@ rm -rf ${BDIR_BASE}
 mkdir -p ${BDIR_BASE}/usr/bin/
 cp ${WDIR}/src/sigmund ${BDIR_BASE}/usr/bin/sigmund
 strip ${BDIR_BASE}/usr/bin/sigmund
+cp ${WDIR}/src/sigmund-configure ${BDIR_BASE}/usr/bin/sigmund-configure
 # configuration files
 mkdir -p ${BDIR_BASE}/etc/sigmund/
 cp ${WDIR}/../conf/sigmund.conf.example ${BDIR_BASE}/etc/sigmund/sigmund.conf.example
@@ -35,7 +36,7 @@ mkdir -p ${BDIR_BASE}/usr/share/doc/sigmund-${PG_DEBVERSION}/kibana-dashboards/
 cp ${WDIR}/../misc/kibana-dashboards/export.json ${BDIR_BASE}/usr/share/doc/sigmund-${PG_DEBVERSION}/kibana-dashboards/export.json
 #####################################
 
-PKG_DEPS="libsqlite3-0, libcurl3, libprotobuf7"
+PKG_DEPS="libsqlite3-0, libcurl3, libprotobuf7, bash, grep, sed"
 
 gen_control_file  "${PKG_PREFIX}"  "${PG_DEBVERSION}"  "${PKG_ARCH}" "${PKG_DESCRIPTION}" "${PKG_DEPS}"
 
