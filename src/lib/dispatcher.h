@@ -44,6 +44,7 @@ class Dispatcher {
   ElasticSearchInterface *es_;
   SyncQueue<std::string> inbound_queue_;
   std::thread *worker_;
+  uint64_t ts_last_warning_; // used to throttle some warnings printed by this class
 
   const bool cache_packets_in_db_;
   const bool send_packets_to_es_;

@@ -21,9 +21,16 @@
 namespace freud {
 namespace lib {
 
+uint64_t get_usec_wallclock_time(void) {
+  struct timeval tm;
+  gettimeofday(&tm, NULL);
+  return ((uint64_t)tm.tv_sec) * 1000000 + tm.tv_usec;
+}
+
 Dispatcher::Dispatcher(const Configurator &config, DBInterface *db, ElasticSearchInterface *es)
     : db_(db), es_(es),
       inbound_queue_(10000), // tail-drop packets if we have more than 10k messages in the queue
+      ts_last_warning_(0),
       cache_packets_in_db_(config.get_cache_packets_in_db()),
       send_packets_to_es_(config.get_send_packets_to_es()) {
   worker_ = new std::thread(&Dispatcher::worker_fn, this);
@@ -34,9 +41,23 @@ Dispatcher::~Dispatcher() {
 }
 
 void Dispatcher::msg_received(std::string *msg) {
-  if (!inbound_queue_.push(msg))
+  if (!inbound_queue_.push(msg)) {
     // message has been tail-dropped, free the memory used
     delete msg;
+
+    // print a warning every hour at most
+    const uint64_t now = get_usec_wallclock_time();
+    if (now > (ts_last_warning_ + 3600 * 1000000L)) {
+      struct tm broken_down_time;
+      const time_t ts = now / 1000000; // seconds since Epoch (UTC)
+      if (gmtime_r(&ts, &broken_down_time)) {
+        fprintf(stderr, "WARNING: inbound queue dropped one message @ %.4d-%.2d-%.2d %.2d:%.2d:%.2d\n",
+                broken_down_time.tm_year + 1900, broken_down_time.tm_mon + 1, broken_down_time.tm_mday,
+                broken_down_time.tm_hour, broken_down_time.tm_min, broken_down_time.tm_sec);
+        ts_last_warning_ = now;
+      }
+    }
+  }
 }
 
 void Dispatcher::stop() {
