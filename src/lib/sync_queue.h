@@ -28,18 +28,27 @@ namespace lib {
 template <typename T>
 class SyncQueue {
  public:
-  SyncQueue() = default;
+  SyncQueue(const uint64_t tail_drop_count = 0) : tail_drop_count_(tail_drop_count) {}
   ~SyncQueue() = default;
 
-  void push(T *datum) {
+  __attribute__((warn_unused_result))
+  bool push(T *datum) {
     {
       // push datum in the queue under the lock
       std::lock_guard<std::mutex> lock_guard(mutex_);
+
+      // check if we need to tail-drop
+      if (tail_drop_count_ && queue_.size() >= tail_drop_count_)
+        return false; // do nothing
+
       queue_.push(datum);
     }
 
     // notify all waiting threads
     cv_.notify_all();
+
+    // success
+    return true;
   }
 
   T* pop_or_wait() {
@@ -70,6 +79,7 @@ class SyncQueue {
   }
 
  private:
+  const uint64_t tail_drop_count_;
   std::queue<T*> queue_;
   std::mutex mutex_;
   std::condition_variable cv_;

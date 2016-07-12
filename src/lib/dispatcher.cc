@@ -23,6 +23,7 @@ namespace lib {
 
 Dispatcher::Dispatcher(const Configurator &config, DBInterface *db, ElasticSearchInterface *es)
     : db_(db), es_(es),
+      inbound_queue_(10000), // tail-drop packets if we have more than 10k messages in the queue
       cache_packets_in_db_(config.get_cache_packets_in_db()),
       send_packets_to_es_(config.get_send_packets_to_es()) {
   worker_ = new std::thread(&Dispatcher::worker_fn, this);
@@ -33,11 +34,14 @@ Dispatcher::~Dispatcher() {
 }
 
 void Dispatcher::msg_received(std::string *msg) {
-  inbound_queue_.push(msg);
+  if (!inbound_queue_.push(msg))
+    // message has been tail-dropped, free the memory used
+    delete msg;
 }
 
 void Dispatcher::stop() {
-  inbound_queue_.push(NULL);
+  // ignore all errors
+  (void) inbound_queue_.push(NULL);
 }
 
 void Dispatcher::stop_and_wait() {
